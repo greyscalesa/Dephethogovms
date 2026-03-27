@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function Logo() {
+export default function Logo({ dark = false }: { dark?: boolean }) {
     return (
         <div className="flex items-center gap-2.5 max-w-full overflow-hidden">
             {/* Oval Icon with Gothic D - Scaled Down */}
@@ -16,7 +16,7 @@ export default function Logo() {
 
             {/* Text Group - Scaled Down */}
             <div className="flex flex-col min-w-0">
-                <span className="text-white font-serif italic font-bold text-lg tracking-tight leading-none drop-shadow-sm">
+                <span className={`${dark ? 'text-[#042f21]' : 'text-white'} font-serif italic font-bold text-lg tracking-tight leading-none drop-shadow-sm`}>
                     dephethogo
                 </span>
                 <span className="text-[#ff8c00] font-black text-[9px] uppercase tracking-[0.2em] mt-0.5 drop-shadow-md">

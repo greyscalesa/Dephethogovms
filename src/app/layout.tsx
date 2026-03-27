@@ -18,6 +18,8 @@ export const metadata: Metadata = {
   description: "Advanced cloud-based visitor management for corporate, industrial, and residential sites by Dephethogo.",
 };
 
+import { LayoutProvider } from "@/lib/LayoutContext";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -25,13 +27,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.variable} ${outfit.variable} font-sans antialiased`}>
-        <div className="flex min-h-screen">
-          <Sidebar />
-          <main className="flex-1 flex flex-col min-w-0">
-            {children}
-          </main>
-        </div>
+      <body className={`${inter.variable} ${outfit.variable} font-sans antialiased text-[16px]`}>
+        <LayoutProvider>
+          <div className="flex min-h-screen relative">
+            <Sidebar />
+            <main className="flex-1 flex flex-col min-w-0 bg-[#f4f7f6]">
+              {children}
+            </main>
+          </div>
+        </LayoutProvider>
       </body>
     </html>
   );

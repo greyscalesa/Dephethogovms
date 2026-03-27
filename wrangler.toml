@@ -2,13 +2,8 @@ name = "dephethogo-access"
 compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat"]
 
-# Build settings for OpenNext
-[build]
-command = "npm run build"
-
-# Output directory for Cloudflare Pages (OpenNext puts it here: .open-next/assets)
-[site]
-bucket = ".open-next/assets"
+# OpenNext Cloudflare configuration
+# No [site] or [build] needed for most OpenNext setups as they are handled by the adapter.
 
 # For any public environment variables:
 [vars]
