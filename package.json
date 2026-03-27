@@ -38,4 +38,9 @@
     "tailwindcss": "^4",
     "typescript": "^5"
   }
+"scripts": {
+  "debug": "ls -la"
 }
+
+}
+
