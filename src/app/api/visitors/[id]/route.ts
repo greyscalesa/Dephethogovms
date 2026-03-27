@@ -3,7 +3,7 @@ import { readDb, writeDb } from '@/lib/data-service';
 
 export async function PATCH(
     request: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     const { id } = await params;
     const data = await request.json();
