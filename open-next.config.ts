@@ -1,5 +1,5 @@
-const config = {
-  // leave empty for now
-};
+import { defineCloudflareConfig } from "@opennextjs/cloudflare";
 
-export default config;
+export default defineCloudflareConfig({
+  // You can leave this empty for now
+});
