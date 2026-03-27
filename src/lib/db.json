@@ -1,0 +1,109 @@
+{
+  "companies": [
+    {
+      "id": "comp-1",
+      "name": "Dephethogo Corp",
+      "domain": "dephethogo.com",
+      "status": "ACTIVE"
+    }
+  ],
+  "sites": [
+    {
+      "id": "site-1",
+      "companyId": "comp-1",
+      "name": "Headquarters",
+      "address": "123 Green Ave, Pretoria",
+      "contactPerson": "John Doe",
+      "contactEmail": "john@dephethogo.com",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "site-2",
+      "companyId": "comp-1",
+      "name": "Johannesburg Branch",
+      "address": "456 Gold St, Sandton",
+      "contactPerson": "Jane Smith",
+      "contactEmail": "jane@dephethogo.com",
+      "status": "ACTIVE"
+    }
+  ],
+  "users": [
+    {
+      "id": "u-1",
+      "companyId": "comp-1",
+      "role": "SUPER_ADMIN",
+      "fullName": "Super Admin",
+      "email": "admin@vms.com",
+      "password": "password123"
+    },
+    {
+      "id": "u-2",
+      "companyId": "comp-1",
+      "role": "COMPANY_ADMIN",
+      "fullName": "Lesego Admin",
+      "email": "lesego@dephethogo.com",
+      "password": "password123"
+    },
+    {
+      "id": "u-3",
+      "companyId": "comp-1",
+      "siteId": "site-1",
+      "role": "SECURITY",
+      "fullName": "Security One",
+      "email": "security@vms.com",
+      "password": "password123"
+    },
+    {
+      "id": "u-4",
+      "companyId": "comp-1",
+      "siteId": "site-1",
+      "role": "EMPLOYEE",
+      "fullName": "Alice Johnson",
+      "email": "alice@dephethogo.com",
+      "password": "password123",
+      "department": "IT",
+      "isHost": true
+    }
+  ],
+  "visitors": [
+    {
+      "id": "v-1",
+      "companyId": "comp-1",
+      "siteId": "site-1",
+      "name": "Michael Smith",
+      "email": "michael@gmail.com",
+      "phone": "0123456789",
+      "type": "CONTRACTOR",
+      "status": "ON_SITE",
+      "hostId": "u-4",
+      "checkIn": "2026-03-25T09:12:00Z"
+    },
+    {
+      "id": "v-1774441219660",
+      "name": "John Doe",
+      "email": "",
+      "phone": "0123456789",
+      "company": "ACME Corp",
+      "type": "GUEST",
+      "hostId": "u-4",
+      "siteId": "site-1",
+      "companyId": "comp-1",
+      "status": "ON_SITE",
+      "checkIn": "2026-03-25T12:20:19.660Z"
+    }
+  ],
+  "bookings": [
+    {
+      "id": "b-1774460570180",
+      "visitorName": "Thapelo",
+      "company": "",
+      "scheduledTime": "2026-03-26",
+      "siteId": "site-1",
+      "hostId": "u-4",
+      "type": "GUEST",
+      "status": "PRE_BOOKED",
+      "createdAt": "2026-03-25T17:42:50.180Z"
+    }
+  ],
+  "incidents": []
+}
