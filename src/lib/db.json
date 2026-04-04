@@ -90,6 +90,22 @@
       "companyId": "comp-1",
       "status": "ON_SITE",
       "checkIn": "2026-03-25T12:20:19.660Z"
+    },
+    {
+      "id": "v-test-qr",
+      "companyId": "comp-1",
+      "siteId": "site-1",
+      "name": "Sarah Connor",
+      "email": "sarah@resistance.com",
+      "phone": "555-0101",
+      "company": "SkyNet Solutions",
+      "type": "GUEST",
+      "status": "PRE_BOOKED",
+      "hostId": "u-4",
+      "hostName": "Alice Johnson",
+      "qrToken": "",
+      "tokenExpiry": "",
+      "scanAttempts": 0
     }
   ],
   "bookings": [

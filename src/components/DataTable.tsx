@@ -12,6 +12,7 @@ import {
     Clock,
     XCircle,
     MoreHorizontal,
+    QrCode,
 } from 'lucide-react';
 
 interface Column {
@@ -41,9 +42,20 @@ export default function DataTable({ columns, data }: DataTableProps) {
                                     <p className="text-[11px] font-bold text-[#042f21]/40 uppercase tracking-widest mt-0.5 truncate">{row.company}</p>
                                 </div>
                             </div>
-                            <button className="p-2 -mr-2 text-slate-400 hover:text-[#fa922c]">
-                                <MoreHorizontal size={20} />
-                            </button>
+                            <div className="flex items-center gap-2 -mr-2">
+                                {row.id && (
+                                    <a 
+                                        href={`/visitors/${row.id}/qr`}
+                                        className="p-2 text-emerald-500 hover:bg-emerald-50 rounded-lg transition-colors"
+                                        title="View QR Code"
+                                    >
+                                        <QrCode size={20} />
+                                    </a>
+                                )}
+                                <button className="p-2 text-slate-400 hover:text-[#fa922c]">
+                                    <MoreHorizontal size={20} />
+                                </button>
+                            </div>
                         </div>
 
                         <div className="grid grid-cols-2 gap-4 pt-2 border-t border-slate-50">
@@ -127,7 +139,16 @@ export default function DataTable({ columns, data }: DataTableProps) {
                                             </td>
                                         );
                                     })}
-                                    <td className="px-6 py-5 text-right">
+                                    <td className="px-6 py-5 text-right flex items-center justify-end gap-3">
+                                        {row.id && (
+                                            <a 
+                                                href={`/visitors/${row.id}/qr`}
+                                                className="p-2.5 text-emerald-500 hover:bg-emerald-50 rounded-xl transition-all active:scale-95 border border-transparent hover:border-emerald-100 shadow-sm"
+                                                title="Visitor QR Code"
+                                            >
+                                                <QrCode size={18} strokeWidth={2.5} />
+                                            </a>
+                                        )}
                                         <button className="p-2.5 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-all active:scale-95">
                                             <MoreHorizontal size={20} />
                                         </button>

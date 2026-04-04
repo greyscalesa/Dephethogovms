@@ -63,7 +63,10 @@ export interface Visitor {
     hostId?: string;
     hostName?: string;
     idNumber?: string;
-    qrCode?: string;
+    qrToken?: string;
+    tokenExpiry?: string;
+    checkedInAt?: string;
+    scanAttempts?: number;
 }
 
 export interface Booking {
