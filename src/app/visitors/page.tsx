@@ -4,33 +4,20 @@ import React, { useState, useEffect } from 'react';
 import TopHeader from '@/components/TopHeader';
 import DataTable from '@/components/DataTable';
 import {
-    Users,
-    Search,
     Plus,
-    X,
     Loader2,
     Calendar,
     Filter,
     Download,
-    FileText
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { exportToCSV, exportToPDF } from '@/lib/utils';
+import CreateInviteModal from '@/components/CreateInviteModal';
 
 export default function VisitorsPage() {
     const [visitors, setVisitors] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
-    const [formData, setFormData] = useState({
-        name: '',
-        email: '',
-        phone: '',
-        company: '',
-        type: 'GUEST',
-        hostId: 'u-4', // Mock default host
-        siteId: 'site-1',
-        companyId: 'comp-1'
-    });
 
     const fetchVisitors = async () => {
         setLoading(true);
@@ -53,23 +40,6 @@ export default function VisitorsPage() {
     useEffect(() => {
         fetchVisitors();
     }, []);
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        try {
-            const res = await fetch('/api/visitors', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData),
-            });
-            if (res.ok) {
-                setShowModal(false);
-                fetchVisitors();
-            }
-        } catch (err) {
-            console.error(err);
-        }
-    };
 
     const columns = [
         { header: 'Visitor', accessor: 'visitor' },
@@ -100,7 +70,7 @@ export default function VisitorsPage() {
                             onClick={() => exportToPDF()}
                             className="flex items-center justify-center gap-2 px-6 py-4 bg-white border border-slate-100 text-[#042f21] rounded-2xl text-[12px] font-black hover:bg-slate-50 transition-all shadow-xl shadow-slate-200/20 active:scale-95 uppercase tracking-widest min-h-[54px]"
                         >
-                            <FileText size={18} strokeWidth={3} />
+                            <Download size={18} strokeWidth={3} />
                             <span className="sm:hidden lg:inline">Export PDF</span>
                         </button>
                         <button
@@ -124,85 +94,13 @@ export default function VisitorsPage() {
                 )}
             </div>
 
-            <AnimatePresence>
-                {showModal && (
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-6 overflow-y-auto">
-                        <motion.div
-                            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                            onClick={() => setShowModal(false)}
-                            className="fixed inset-0 bg-[#042f21]/80 backdrop-blur-md"
-                        />
-                        <motion.div
-                            initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
-                            className="bg-white w-full max-w-xl rounded-[32px] md:rounded-[40px] shadow-2xl relative z-10 overflow-hidden my-auto"
-                        >
-                            <div className="p-6 md:p-10 max-h-[90vh] overflow-y-auto no-scrollbar">
-                                <div className="flex items-center justify-between mb-8">
-                                    <h2 className="text-2xl md:text-3xl font-black text-[#042f21] tracking-tighter uppercase font-outfit">Visitor Check-In</h2>
-                                    <button onClick={() => setShowModal(false)} className="p-2.5 bg-slate-100 rounded-xl text-slate-400 hover:text-slate-900 transition-colors">
-                                        <X size={20} strokeWidth={3} />
-                                    </button>
-                                </div>
-
-                                <form onSubmit={handleSubmit} className="space-y-6">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-                                        <div className="space-y-2">
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Full Name</label>
-                                            <input
-                                                required
-                                                className="w-full h-14 md:h-16 px-6 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-2 focus:ring-[#fa922c]/20 focus:border-[#fa922c] transition-all font-bold text-[16px]"
-                                                value={formData.name}
-                                                onChange={e => setFormData({ ...formData, name: e.target.value })}
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Company Name</label>
-                                            <input
-                                                required
-                                                className="w-full h-14 md:h-16 px-6 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-2 focus:ring-[#fa922c]/20 focus:border-[#fa922c] transition-all font-bold text-[16px]"
-                                                value={formData.company}
-                                                onChange={e => setFormData({ ...formData, company: e.target.value })}
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-                                        <div className="space-y-2">
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Phone Number</label>
-                                            <input
-                                                required
-                                                type="tel"
-                                                className="w-full h-14 md:h-16 px-6 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-2 focus:ring-[#fa922c]/20 focus:border-[#fa922c] transition-all font-bold text-[16px]"
-                                                value={formData.phone}
-                                                onChange={e => setFormData({ ...formData, phone: e.target.value })}
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Visitor Type</label>
-                                            <div className="relative">
-                                                <select
-                                                    className="w-full h-14 md:h-16 px-6 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-2 focus:ring-[#fa922c]/20 focus:border-[#fa922c] transition-all font-bold appearance-none capitalize text-[16px]"
-                                                    value={formData.type}
-                                                    onChange={e => setFormData({ ...formData, type: e.target.value })}
-                                                >
-                                                    <option value="GUEST">Guest</option>
-                                                    <option value="CONTRACTOR">Contractor</option>
-                                                    <option value="VENDOR">Vendor</option>
-                                                    <option value="DELIVERY">Delivery</option>
-                                                </select>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <button className="w-full h-16 md:h-20 bg-[#fa922c] text-white rounded-2xl md:rounded-[24px] font-black text-sm uppercase tracking-widest shadow-2xl shadow-[#fa922c]/30 hover:bg-[#e07d20] active:scale-95 transition-all mt-4 min-h-[64px]">
-                                        Check-In Visitor
-                                    </button>
-                                </form>
-                            </div>
-                        </motion.div>
-                    </div>
-                )}
-            </AnimatePresence>
+            <CreateInviteModal 
+                isOpen={showModal} 
+                onClose={() => setShowModal(false)}
+                onSuccess={() => {
+                    fetchVisitors();
+                }}
+            />
         </div>
     );
 }

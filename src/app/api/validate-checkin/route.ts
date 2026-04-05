@@ -27,11 +27,11 @@ export async function POST(request: Request) {
 
         const visitor = db.visitors[visitorIndex];
 
-        // 2. Check if already checked in
-        if (visitor.status === VisitorStatus.ON_SITE) {
+        // 2. Check entry type and access permissions
+        if (visitor.status === 'ON_SITE' && visitor.entryType !== 'MULTIPLE') {
             return NextResponse.json({ 
                 success: false, 
-                error: 'Visitor already checked in', 
+                error: 'Single-entry token already used.', 
                 visitorName: visitor.name 
             }, { status: 409 });
         }
@@ -40,9 +40,9 @@ export async function POST(request: Request) {
         const now = new Date().toISOString();
         const updatedVisitor = {
             ...visitor,
-            status: VisitorStatus.ON_SITE,
+            status: 'ON_SITE',
             checkedInAt: now,
-            checkIn: now, // Support existing checkIn field
+            checkIn: now,
             scanAttempts: (visitor.scanAttempts || 0) + 1
         };
 

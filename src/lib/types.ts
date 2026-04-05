@@ -48,25 +48,37 @@ export interface User {
     email: string;
 }
 
+export interface VehicleData {
+    registration: string;
+    licenceDiscScanned: boolean;
+    vin?: string;
+}
+
 export interface Visitor {
     id: string;
     companyId: string;
     siteId: string;
     name: string;
-    email: string;
+    email?: string;
     phone: string;
     company?: string;
     type: VisitorType;
-    status: VisitorStatus;
+    status: 'PENDING' | 'ARRIVED' | 'EXPIRED' | 'CANCELLED' | 'ON_SITE' | 'CHECKED_OUT';
     checkIn?: string;
     checkOut?: string;
-    hostId?: string;
-    hostName?: string;
-    idNumber?: string;
+    hostId: string;
+    hostName: string;
+    purpose?: string;
+    arrivalTime?: string;
+    expectedDuration?: string;
+    vehicleData?: VehicleData;
     qrToken?: string;
-    tokenExpiry?: string;
-    checkedInAt?: string;
+    qrExpiry?: string;
+    entryType?: 'ONE_TIME' | 'MULTIPLE';
+    earlyCheckInMinutes?: number;
     scanAttempts?: number;
+    createdBy?: string;
+    createdAt?: string;
 }
 
 export interface Booking {
