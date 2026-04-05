@@ -449,7 +449,7 @@ export default function CreateInviteModal({ isOpen, onClose, onSuccess }: Create
                                         <QRCodeSVG 
                                             value={`https://yourapp.com/checkin?token=${createdVisitor?.qrToken}`}
                                             size={200}
-                                            level="K"
+                                            level="H"
                                             includeMargin={false}
                                         />
                                     </div>
@@ -506,7 +506,8 @@ export default function CreateInviteModal({ isOpen, onClose, onSuccess }: Create
                                     </>
                                 )}
                             </button>
-                        ) : (
+                        </div>
+                    ) : (
                             <div className="flex gap-4">
                                 <button 
                                     onClick={() => setStep('FORM')}
