@@ -88,9 +88,13 @@ export default function SitesPage() {
                 setShowCreateModal(false);
                 setFormData({ name: '', type: 'OFFICE', address: '', operatingHours: '', maxOccupancy: 500 });
                 fetchSites();
+            } else {
+                const errorData = await res.json();
+                alert(`Site creation failed: ${errorData.error || 'Internal Server Error'}`);
             }
         } catch (err) {
             console.error(err);
+            alert('A network error occurred. Please try again.');
         } finally {
             setIsSubmitting(false);
         }

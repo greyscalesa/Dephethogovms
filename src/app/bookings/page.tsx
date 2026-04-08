@@ -78,9 +78,13 @@ export default function BookingsPage() {
                 setShowSuccess(true);
                 setFormData({ visitorName: '', company: '', scheduledTime: '', siteId: 'site-1', hostId: 'u-4', type: 'GUEST' });
                 fetchBookings();
+            } else {
+                const errorData = await res.json();
+                alert(`Creation failed: ${errorData.error || 'Internal Server Error'}`);
             }
         } catch (err) {
             console.error(err);
+            alert('A network error occurred. Please try again.');
         } finally {
             setIsSubmitting(false);
         }

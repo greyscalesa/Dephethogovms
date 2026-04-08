@@ -27,18 +27,23 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-    const data = await request.json();
-    const db = readDb();
-    
-    const newSite = {
-        id: `site-${Date.now()}`,
-        ...data,
-        status: 'ACTIVE',
-        createdAt: new Date().toISOString()
-    };
-    
-    db.sites.push(newSite);
-    writeDb(db);
-    
-    return NextResponse.json(newSite);
+    try {
+        const data = await request.json();
+        const db = readDb();
+        
+        const newSite = {
+            id: `site-${Date.now()}`,
+            ...data,
+            status: 'ACTIVE',
+            createdAt: new Date().toISOString()
+        };
+        
+        if (!db.sites) db.sites = [];
+        db.sites.push(newSite);
+        writeDb(db);
+        
+        return NextResponse.json(newSite, { status: 201 });
+    } catch (error: any) {
+        return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    }
 }
