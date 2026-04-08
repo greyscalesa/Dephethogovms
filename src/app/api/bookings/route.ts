@@ -1,32 +1,31 @@
 import { NextResponse } from 'next/server';
-import { readDb, writeDb } from '@/lib/data-service';
+import { supabase } from '@/lib/supabase';
 
 export async function GET() {
-    const db = readDb();
-    return NextResponse.json(db.bookings || []);
+    const { data: bookings, error } = await supabase.from('bookings').select('*');
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json(bookings || []);
 }
 
 export async function POST(request: Request) {
     try {
         const body = await request.json();
-        const db = readDb();
-
-        if (!db.bookings) db.bookings = [];
 
         const qrToken = `INV-${Math.random().toString(36).substring(2, 9).toUpperCase()}`;
 
         const newBooking = {
             id: `b-${Date.now()}`,
             ...body,
-            qrToken,
+            qr_token: qrToken,
             status: 'PRE_BOOKED',
-            createdAt: new Date().toISOString()
+            created_at: new Date().toISOString()
         };
 
-        db.bookings.push(newBooking);
-        writeDb(db);
+        const { error } = await supabase.from('bookings').insert([newBooking]);
+        if (error) throw error;
 
-        return NextResponse.json(newBooking, { status: 201 });
+        // Map snake_case back to camelCase for the frontend expectation
+        return NextResponse.json({ ...newBooking, qrToken: newBooking.qr_token, createdAt: newBooking.created_at }, { status: 201 });
     } catch (error: any) {
         return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
