@@ -57,9 +57,15 @@ export default function SitesPage() {
         try {
             const res = await fetch('/api/sites');
             const data = await res.json();
-            setSites(data);
+            if (Array.isArray(data)) {
+                setSites(data);
+            } else {
+                console.error("Failed to load sites:", data);
+                setSites([]);
+            }
         } catch (err) {
             console.error(err);
+            setSites([]);
         } finally {
             setLoading(false);
         }
