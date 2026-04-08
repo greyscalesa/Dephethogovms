@@ -1,7 +1,19 @@
 import fs from 'fs';
 import path from 'path';
+import os from 'os';
 
-const DB_PATH = path.join(process.cwd(), 'src/lib/db.json');
+const SOURCE_DB_PATH = path.join(process.cwd(), 'src/lib/db.json');
+const isServerless = process.env.AWS_LAMBDA_FUNCTION_VERSION || process.env.VERCEL || process.cwd().includes('/var/task') || process.env.NODE_ENV === 'production';
+const DB_PATH = isServerless ? path.join(os.tmpdir(), 'db.json') : SOURCE_DB_PATH;
+
+if (isServerless && !fs.existsSync(DB_PATH)) {
+    try {
+        const data = fs.readFileSync(SOURCE_DB_PATH, 'utf-8');
+        fs.writeFileSync(DB_PATH, data, 'utf-8');
+    } catch(e) {
+        // Ignore fallback
+    }
+}
 
 let cachedDb: any = null;
 let lastReadTime = 0;
