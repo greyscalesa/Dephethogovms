@@ -47,7 +47,9 @@ export default function SitesOverview() {
 
     React.useEffect(() => {
         fetchSites();
-        const interval = setInterval(fetchSites, 30000); // Polling every 30s
+        const interval = setInterval(() => {
+            if (document.visibilityState === 'visible') fetchSites();
+        }, 30000); // Polling every 30s only when active
         return () => clearInterval(interval);
     }, []);
 

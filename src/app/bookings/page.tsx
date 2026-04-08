@@ -21,6 +21,7 @@ import VisitorQR from '@/components/VisitorQR';
 export default function BookingsPage() {
     const [bookings, setBookings] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const [showModal, setShowModal] = useState(false);
     const [formData, setFormData] = useState({
         visitorName: '',
@@ -62,6 +63,8 @@ export default function BookingsPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (isSubmitting) return;
+        setIsSubmitting(true);
         try {
             const res = await fetch('/api/bookings', {
                 method: 'POST',
@@ -78,6 +81,8 @@ export default function BookingsPage() {
             }
         } catch (err) {
             console.error(err);
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -172,9 +177,10 @@ export default function BookingsPage() {
 
                                     <button
                                         type="submit"
-                                        className="w-full h-20 bg-[#fa922c] text-white rounded-[24px] font-black text-sm uppercase tracking-widest shadow-2xl shadow-[#fa922c]/30 hover:bg-[#e07d20] active:scale-95 transition-all mt-4"
+                                        disabled={isSubmitting}
+                                        className="w-full h-20 bg-[#fa922c] text-white rounded-[24px] font-black text-sm uppercase tracking-widest shadow-2xl shadow-[#fa922c]/30 hover:bg-[#e07d20] active:scale-95 transition-all mt-4 disabled:opacity-50 flex items-center justify-center gap-2"
                                     >
-                                        Confirm Reservation
+                                        {isSubmitting ? <Loader2 className="animate-spin" size={20} /> : 'Confirm Reservation'}
                                     </button>
                                 </form>
                             </div>

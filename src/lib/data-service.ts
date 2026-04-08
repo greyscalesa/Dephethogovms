@@ -3,13 +3,25 @@ import path from 'path';
 
 const DB_PATH = path.join(process.cwd(), 'src/lib/db.json');
 
+let cachedDb: any = null;
+let lastReadTime = 0;
+const CACHE_TTL = 1000; // 1 second cache
+
 export function readDb() {
+    const now = Date.now();
+    if (cachedDb && (now - lastReadTime < CACHE_TTL)) {
+        return JSON.parse(JSON.stringify(cachedDb));
+    }
     const data = fs.readFileSync(DB_PATH, 'utf-8');
-    return JSON.parse(data);
+    cachedDb = JSON.parse(data);
+    lastReadTime = now;
+    return JSON.parse(JSON.stringify(cachedDb));
 }
 
 export function writeDb(data: any) {
     fs.writeFileSync(DB_PATH, JSON.stringify(data, null, 2), 'utf-8');
+    cachedDb = data;
+    lastReadTime = Date.now();
 }
 
 export function getStats(siteId?: string) {

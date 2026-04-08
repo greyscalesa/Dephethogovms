@@ -31,7 +31,9 @@ export default function DashboardStats() {
 
     useEffect(() => {
         fetchStats();
-        const interval = setInterval(fetchStats, 30000); // 30s refresh
+        const interval = setInterval(() => {
+            if (document.visibilityState === 'visible') fetchStats();
+        }, 30000); // 30s refresh only when active
         return () => clearInterval(interval);
     }, [selectedSiteId]);
 

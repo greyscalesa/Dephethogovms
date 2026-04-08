@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import TopHeader from '@/components/TopHeader';
 import DashboardStats from '@/components/DashboardStats';
 import VisitorChart from '@/components/VisitorChart';
@@ -95,9 +96,9 @@ export default function Dashboard() {
           <div className="lg:col-span-1 bg-white p-6 md:p-8 rounded-[24px] border border-slate-100 shadow-xl shadow-slate-200/40 flex flex-col">
             <div className="flex items-center justify-between mb-8">
               <h3 className="text-xl font-black text-[#042f21] font-outfit uppercase tracking-tighter">Active Access Logs</h3>
-              <button className="text-[12px] font-black text-[#fa922c] hover:text-[#e07d20] transition-colors uppercase tracking-widest flex items-center gap-1.5 active:scale-95">
+              <Link href="/transactions" className="text-[12px] font-black text-[#fa922c] hover:text-[#e07d20] transition-colors uppercase tracking-widest flex items-center gap-1.5 active:scale-95">
                 View All <ArrowRight size={16} strokeWidth={3} />
-              </button>
+              </Link>
             </div>
 
             <div className="space-y-4 md:space-y-6 flex-1">
@@ -135,10 +136,10 @@ export default function Dashboard() {
             </div>
 
             {/* Emergency Evacuation List Action */}
-            <button className="w-full py-5 mt-8 md:mt-10 bg-[#042f21] text-white rounded-2xl font-black text-xs hover:bg-[#032319] transition-all uppercase tracking-widest shadow-lg shadow-[#042f21]/20 group flex items-center justify-center gap-3 min-h-[60px]">
+            <Link href="/emergency" className="w-full py-5 mt-8 md:mt-10 bg-[#042f21] text-white rounded-2xl font-black text-xs hover:bg-[#032319] transition-all uppercase tracking-widest shadow-lg shadow-[#042f21]/20 group flex items-center justify-center gap-3 min-h-[60px]">
               <Users size={18} className="text-emerald-400 group-hover:scale-110 transition-transform" />
               Evacuation List
-            </button>
+            </Link>
           </div>
         </div>
       </div>

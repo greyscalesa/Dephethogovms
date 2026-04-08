@@ -43,6 +43,14 @@ export default function SitesPage() {
     const [viewMode, setViewMode] = useState<'card' | 'map'>('card');
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [formData, setFormData] = useState({
+        name: '',
+        type: 'OFFICE',
+        address: '',
+        operatingHours: '',
+        maxOccupancy: 500
+    });
 
     const fetchSites = async () => {
         setLoading(true);
@@ -65,6 +73,28 @@ export default function SitesPage() {
         site.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         site.code.toLowerCase().includes(searchQuery.toLowerCase())
     );
+
+    const handleCreateSite = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (isSubmitting) return;
+        setIsSubmitting(true);
+        try {
+            const res = await fetch('/api/sites', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            });
+            if (res.ok) {
+                setShowCreateModal(false);
+                setFormData({ name: '', type: 'OFFICE', address: '', operatingHours: '', maxOccupancy: 500 });
+                fetchSites();
+            }
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
 
     return (
         <div className="flex-1 flex flex-col min-h-0 bg-[#f4f7f6]">
@@ -220,39 +250,39 @@ export default function SitesPage() {
                                     </button>
                                 </div>
 
-                                <form className="space-y-8">
+                                <form onSubmit={handleCreateSite} className="space-y-8">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                         <div className="space-y-2">
                                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Site Name</label>
-                                            <input className="w-full h-16 px-6 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-2 focus:ring-[#fa922c]/20 focus:border-[#fa922c] transition-all font-bold" placeholder="e.g. Pretoria Hub" />
+                                            <input required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full h-16 px-6 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-2 focus:ring-[#fa922c]/20 focus:border-[#fa922c] transition-all font-bold" placeholder="e.g. Pretoria Hub" />
                                         </div>
                                         <div className="space-y-2">
                                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Site Type</label>
-                                            <select className="w-full h-16 px-6 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-2 focus:ring-[#fa922c]/20 focus:border-[#fa922c] transition-all font-bold appearance-none uppercase tracking-tight">
-                                                <option>Corporate Office</option>
-                                                <option>Industrial Warehouse</option>
-                                                <option>Residential Estate</option>
-                                                <option>Event Venue</option>
+                                            <select required value={formData.type} onChange={e => setFormData({...formData, type: e.target.value})} className="w-full h-16 px-6 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-2 focus:ring-[#fa922c]/20 focus:border-[#fa922c] transition-all font-bold appearance-none uppercase tracking-tight">
+                                                <option value="OFFICE">Corporate Office</option>
+                                                <option value="WAREHOUSE">Industrial Warehouse</option>
+                                                <option value="ESTATE">Residential Estate</option>
+                                                <option value="EVENT">Event Venue</option>
                                             </select>
                                         </div>
                                         <div className="space-y-2 md:col-span-2">
                                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Physical Address</label>
-                                            <input className="w-full h-16 px-6 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-2 focus:ring-[#fa922c]/20 focus:border-[#fa922c] transition-all font-bold" placeholder="Full street address..." />
+                                            <input required value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} className="w-full h-16 px-6 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-2 focus:ring-[#fa922c]/20 focus:border-[#fa922c] transition-all font-bold" placeholder="Full street address..." />
                                         </div>
                                         <div className="grid grid-cols-2 gap-8 md:col-span-2">
                                             <div className="space-y-2">
                                                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Operating Hours</label>
-                                                <input className="w-full h-16 px-6 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-2 focus:ring-[#fa922c]/20 focus:border-[#fa922c] transition-all font-bold" placeholder="08:00 - 17:00" />
+                                                <input required value={formData.operatingHours} onChange={e => setFormData({...formData, operatingHours: e.target.value})} className="w-full h-16 px-6 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-2 focus:ring-[#fa922c]/20 focus:border-[#fa922c] transition-all font-bold" placeholder="08:00 - 17:00" />
                                             </div>
                                             <div className="space-y-2">
                                                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Max Capacity</label>
-                                                <input type="number" className="w-full h-16 px-6 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-2 focus:ring-[#fa922c]/20 focus:border-[#fa922c] transition-all font-bold" placeholder="500" />
+                                                <input required type="number" value={formData.maxOccupancy} onChange={e => setFormData({...formData, maxOccupancy: parseInt(e.target.value) || 0})} className="w-full h-16 px-6 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-2 focus:ring-[#fa922c]/20 focus:border-[#fa922c] transition-all font-bold" placeholder="500" />
                                             </div>
                                         </div>
                                     </div>
 
-                                    <button className="w-full h-20 bg-[#fa922c] text-white rounded-[24px] font-black text-sm uppercase tracking-widest shadow-2xl shadow-[#fa922c]/30 hover:bg-[#e07d20] active:scale-95 transition-all mt-6">
-                                        Initialize Site
+                                    <button disabled={isSubmitting} type="submit" className="w-full h-20 bg-[#fa922c] text-white rounded-[24px] font-black text-sm uppercase tracking-widest shadow-2xl shadow-[#fa922c]/30 hover:bg-[#e07d20] active:scale-95 transition-all mt-6 disabled:opacity-50 flex items-center justify-center gap-2">
+                                        {isSubmitting ? <Loader2 className="animate-spin" size={20} /> : 'Initialize Site'}
                                     </button>
                                 </form>
                             </div>
