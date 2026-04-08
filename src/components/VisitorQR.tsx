@@ -23,6 +23,27 @@ export default function VisitorQR({ visitor, token }: VisitorQRProps) {
         setTimeout(() => setCopied(false), 2000);
     };
 
+    const handleShare = async () => {
+        // If deployed, this generates a real link. Since it's a demo, use origin
+        const passLink = `${window.location.origin}/visitors/${visitor.id}/qr?token=${token}`;
+        const shareData = {
+            title: 'Dephethogo Visitor Pass',
+            text: `Hi ${visitor.name},\n\nHere is your verified visitor access pass for Dephethogo (Secure Gate Token 0x829).\n\nPlease present the following access token or QR code at security reception:\nToken: ${token}\n\n`,
+            url: passLink,
+        };
+
+        try {
+            if (navigator.canShare && navigator.canShare(shareData)) {
+                await navigator.share(shareData);
+            } else {
+                // Fallback to mailto
+                window.location.href = `mailto:?subject=Your Dephethogo Visitor Pass&body=${encodeURIComponent(shareData.text + '\n\nAccess Link: ' + shareData.url)}`;
+            }
+        } catch (err) {
+            console.error('Error sharing', err);
+        }
+    };
+
     const handleDownload = async () => {
         setDownloading(true);
         try {
@@ -135,6 +156,14 @@ export default function VisitorQR({ visitor, token }: VisitorQRProps) {
 
             {/* Action Buttons */}
             <div className="mt-10 flex flex-wrap justify-center gap-4">
+                <button 
+                    onClick={handleShare}
+                    className="flex items-center gap-3 px-6 py-3 bg-[#fa922c] border border-[#fa922c] rounded-2xl text-sm font-bold text-white hover:bg-[#e07d20] hover:border-[#e07d20] transition-all active:scale-95 shadow-md shadow-[#fa922c]/20"
+                >
+                    <Share2 className="w-4 h-4" />
+                    Send Invite
+                </button>
+                
                 <button 
                     onClick={handleDownload}
                     disabled={downloading}
