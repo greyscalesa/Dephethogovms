@@ -13,14 +13,25 @@ interface PageProps {
 export default async function VisitorQrPage({ params }: PageProps) {
     const { id } = await params;
     const db = readDb();
-    const visitor = db.visitors.find((v: any) => v.id === id);
+    let visitor = db.visitors.find((v: any) => v.id === id);
+    
+    if (!visitor) {
+        const booking = db.bookings?.find((b: any) => b.id === id);
+        if (booking) {
+            visitor = {
+                ...booking,
+                name: booking.visitorName,
+                hostName: db.users.find((u: any) => u.id === booking.hostId)?.fullName || 'Alice Johnson'
+            };
+        }
+    }
 
     if (!visitor) {
         notFound();
     }
 
     // Generate a secure token for this visitor
-    const token = await generateQrToken(visitor.id);
+    const token = await generateQrToken(visitor);
 
     return (
         <div className="min-h-screen bg-[#f8fafc] py-12 px-6">

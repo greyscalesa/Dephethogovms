@@ -7,6 +7,7 @@ import {
     Clock,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useSite } from '@/lib/context/SiteContext';
 
 const iconMap: Record<string, any> = {
     'ACTIVE VISITS': Users,
@@ -16,10 +17,11 @@ const iconMap: Record<string, any> = {
 
 export default function DashboardStats() {
     const [stats, setStats] = useState<any[]>([]);
+    const { selectedSiteId } = useSite();
 
     const fetchStats = async () => {
         try {
-            const res = await fetch('/api/stats');
+            const res = await fetch(`/api/stats?siteId=${selectedSiteId}`);
             const data = await res.json();
             setStats(data);
         } catch (err) {
@@ -31,7 +33,7 @@ export default function DashboardStats() {
         fetchStats();
         const interval = setInterval(fetchStats, 30000); // 30s refresh
         return () => clearInterval(interval);
-    }, []);
+    }, [selectedSiteId]);
 
     if (stats.length === 0) return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">

@@ -9,10 +9,27 @@ import {
     Menu,
 } from 'lucide-react';
 import { useLayout } from '@/lib/LayoutContext';
+import { useSite } from '@/lib/context/SiteContext';
 import Logo from '@/components/Logo';
+import { MapPin } from 'lucide-react';
 
 export default function TopHeader() {
     const { toggleSidebar } = useLayout();
+    const { selectedSiteId, setSelectedSiteId } = useSite();
+    const [sites, setSites] = React.useState<any[]>([]);
+
+    React.useEffect(() => {
+        const fetchSites = async () => {
+            try {
+                const res = await fetch('/api/sites');
+                const data = await res.json();
+                setSites(data);
+            } catch (err) {
+                console.error('Failed to fetch sites:', err);
+            }
+        };
+        fetchSites();
+    }, []);
 
     return (
         <header className="sticky top-0 z-40 w-full h-16 lg:h-20 bg-white border-b border-[#ccdbd4]/20 px-4 md:px-8 flex items-center justify-between">
@@ -39,6 +56,29 @@ export default function TopHeader() {
                     className="w-full h-12 pl-14 pr-6 bg-[#ccdbd4]/10 border-none rounded-2xl text-[14px] font-bold text-[#042f21] focus:ring-4 focus:ring-[#fa922c]/5 placeholder-[#042f21]/30 transition-all outline-none"
                     style={{ fontSize: '16px' }} // Ensure no zoom on iOS
                 />
+            </div>
+
+            {/* Global Site Selector */}
+            <div className="hidden lg:flex items-center gap-3 px-6 py-2 bg-[#ccdbd4]/10 border border-[#ccdbd4]/5 rounded-2xl ml-8 group hover:bg-[#ccdbd4]/20 transition-all cursor-pointer">
+                <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center shadow-sm">
+                    <MapPin size={16} className="text-[#fa922c]" />
+                </div>
+                <div className="flex flex-col">
+                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Operating Site</span>
+                    <div className="flex items-center gap-2">
+                        <select 
+                            value={selectedSiteId}
+                            onChange={(e) => setSelectedSiteId(e.target.value)}
+                            className="bg-transparent text-[13px] font-black text-[#042f21] outline-none appearance-none cursor-pointer uppercase tracking-tight pr-4"
+                        >
+                            <option value="all">Enterprise (All)</option>
+                            {sites.map(site => (
+                                <option key={site.id} value={site.id}>{site.name}</option>
+                            ))}
+                        </select>
+                        <ChevronDown size={14} className="text-[#042f21]/20 group-hover:text-[#fa922c] -ml-4" />
+                    </div>
+                </div>
             </div>
 
             {/* Right side actions */}

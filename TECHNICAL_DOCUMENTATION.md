@@ -36,7 +36,8 @@ The system follows a strict hierarchical access model:
 1. **Platform (Super Admin)**: Global oversight across all clients.
 2. **Company (Tenant Admin)**: Management of a single enterprise entity.
 3. **Site (Location Admin)**: Management of specific physical buildings/sites.
-4. **Security/Host**: Daily operational roles for check-ins and hosting.
+4. **Site Context (Hierarchical Filtering)**: Global site selection mechanism via `SiteContext` allowing users to switch between assigned locations.
+5. **Security/Host**: Daily operational roles for check-ins and hosting within a specific site context.
 
 ### Key Directory Structure
 ```text
@@ -73,11 +74,11 @@ The system utilizes strict TypeScript enums to maintain data integrity across th
 | Entity | Key Fields | Purpose |
 | :--- | :--- | :--- |
 | **Companies** | `id`, `name`, `domain`, `status`, `logoUrl` | Tenant configuration and branding. |
-| **Sites** | `id`, `companyId`, `name`, `address` | Physical location management. |
-| **Users** | `id`, `fullName`, `email`, `role`, `siteId?` | Identity and access management. |
-| **Visitors** | `id`, `type`, `status`, `checkIn`, `qrCode` | Guest profiles and real-time tracking. |
-| **Bookings** | `id`, `visitorId`, `hostId`, `scheduledTime` | Pre-arrival management and QR invitations. |
-| **Employees** | `id`, `fullName`, `department`, `isHost` | Internal staff list for visitor hosting. |
+| **Sites** | `id`, `name`, `code`, `address`, `status`, `maxOccupancy`, `operatingHours` | Physical location and infrastructure management. |
+| **Users** | `id`, `fullName`, `email`, `role`, `siteId?`, `siteIds[]` | Identity and multi-site assignment management. |
+| **Visitors** | `id`, `siteId`, `type`, `status`, `checkIn`, `qrToken` | Guest profiles and site-specific activity tracking. |
+| **Bookings** | `id`, `siteId`, `visitorId`, `hostId`, `scheduledTime` | Pre-arrival management and site-bound QR invitations. |
+| **EntryPoints** | `id`, `siteId`, `name`, `type`, `status` | Granular entry management (Gates, Receptions). |
 
 ---
 
@@ -112,8 +113,9 @@ The system implements a granular RBAC model:
 
 ### A. Real-time Dashboard & Analytics
 - **Dynamic KPIs**: Instant tracking of daily visitor volumes, check-in status, and occupancy limits.
+- **Sites Overview**: High-fidelity operational visibility section providing real-time health and traffic data for all registered locations.
+- **Hierarchical Filtering**: Global site selector in the navigation bar that synchronizes all dashboard data (Stats, Logs, Charts) to the selected site context.
 - **Analytics Visualization**: Interactive Recharts components representing traffic-to-site hourly and weekly trends.
-- **Role-specific Data**: Content filters automatically based on the user's scope (Company vs Site).
 
 ### B. Intelligent QR Scanner
 - **Seamless Check-ins**: A mobile-optimized scanner that processes pre-booked appointments instantly.

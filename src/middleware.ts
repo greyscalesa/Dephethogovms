@@ -16,7 +16,15 @@ export function middleware(request: NextRequest) {
 
     // Redirect to login if no session and not on login page
     if (!session && path !== '/login') {
-        return NextResponse.redirect(new URL('/login', request.url));
+        // If it's an API route, return 401 instead of redirecting to HTML login page
+        if (path.startsWith('/api/') && !path.startsWith('/api/auth/')) {
+            // Stats and Validate are exempt for now for scanning convenience
+            if (!path.startsWith('/api/stats') && !path.startsWith('/api/validate-checkin')) {
+                return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+            }
+        } else {
+            return NextResponse.redirect(new URL('/login', request.url));
+        }
     }
 
     // Redirect to dashboard if session exists and on login page

@@ -19,6 +19,7 @@ export const metadata: Metadata = {
 };
 
 import { LayoutProvider } from "@/lib/LayoutContext";
+import { SiteProvider } from "@/lib/context/SiteContext";
 
 export default function RootLayout({
   children,
@@ -28,14 +29,16 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.variable} ${outfit.variable} font-sans antialiased text-[16px]`}>
-        <LayoutProvider>
-          <div className="flex min-h-screen relative">
-            <Sidebar />
-            <main className="flex-1 flex flex-col min-w-0 bg-[#f4f7f6]">
-              {children}
-            </main>
-          </div>
-        </LayoutProvider>
+        <SiteProvider>
+          <LayoutProvider>
+            <div className="flex min-h-screen relative">
+              <Sidebar />
+              <main className="flex-1 flex flex-col min-w-0 bg-[#f4f7f6]">
+                {children}
+              </main>
+            </div>
+          </LayoutProvider>
+        </SiteProvider>
       </body>
     </html>
   );

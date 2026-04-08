@@ -33,16 +33,34 @@ export interface Site {
     id: string;
     companyId: string;
     name: string;
+    code: string;
     address: string;
-    contactPerson: string;
+    contactNumber: string;
     contactEmail: string;
-    status: 'ACTIVE' | 'INACTIVE';
+    managerId: string;
+    operatingHours: string;
+    maxOccupancy: number;
+    qrPrefix: string;
+    type: 'OFFICE' | 'WAREHOUSE' | 'EVENT' | 'ESTATE' | 'OTHER';
+    status: 'ACTIVE' | 'INACTIVE' | 'OFFLINE';
+    lastActivityAt?: string;
+}
+
+export interface EntryPoint {
+    id: string;
+    siteId: string;
+    name: string;
+    type: 'GATE' | 'RECEPTION' | 'SECURITY';
+    status: 'ACTIVE' | 'OFFLINE';
+    lastGuardId?: string;
+    lastDeviceId?: string;
 }
 
 export interface User {
     id: string;
     companyId?: string;
-    siteId?: string; // If SITE_ADMIN, restricted to this site
+    siteId?: string; 
+    siteIds?: string[]; // Supporting multi-site assignments
     role: UserRole;
     fullName: string;
     email: string;

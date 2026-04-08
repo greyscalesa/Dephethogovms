@@ -4,9 +4,17 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { generateQrToken } from '@/lib/qr-service';
 
-export async function GET() {
+export async function GET(request: Request) {
+    const { searchParams } = new URL(request.url);
+    const siteId = searchParams.get('siteId');
     const db = readDb();
-    return NextResponse.json(db.visitors);
+    
+    let visitors = db.visitors || [];
+    if (siteId && siteId !== 'all') {
+        visitors = visitors.filter((v: any) => v.siteId === siteId);
+    }
+    
+    return NextResponse.json(visitors);
 }
 
 export async function POST(request: Request) {

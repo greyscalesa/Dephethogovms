@@ -12,9 +12,12 @@ export async function POST(request: Request) {
 
     if (!db.bookings) db.bookings = [];
 
+    const qrToken = `INV-${Math.random().toString(36).substring(2, 9).toUpperCase()}`;
+
     const newBooking = {
         id: `b-${Date.now()}`,
         ...body,
+        qrToken,
         status: 'PRE_BOOKED',
         createdAt: new Date().toISOString()
     };

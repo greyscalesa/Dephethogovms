@@ -12,18 +12,49 @@
       "id": "site-1",
       "companyId": "comp-1",
       "name": "Headquarters",
+      "code": "HQ-001",
       "address": "123 Green Ave, Pretoria",
-      "contactPerson": "John Doe",
-      "contactEmail": "john@dephethogo.com",
-      "status": "ACTIVE"
+      "contactNumber": "012 345 6789",
+      "contactEmail": "hq@dephethogo.com",
+      "managerId": "u-2",
+      "operatingHours": "08:00 - 18:00",
+      "maxOccupancy": 500,
+      "qrPrefix": "HQ",
+      "type": "OFFICE",
+      "status": "ACTIVE",
+      "lastActivityAt": "2026-03-25T17:42:50.180Z"
     },
     {
       "id": "site-2",
       "companyId": "comp-1",
       "name": "Johannesburg Branch",
+      "code": "JHB-002",
       "address": "456 Gold St, Sandton",
-      "contactPerson": "Jane Smith",
-      "contactEmail": "jane@dephethogo.com",
+      "contactNumber": "011 987 6543",
+      "contactEmail": "jhb@dephethogo.com",
+      "managerId": "u-4",
+      "operatingHours": "07:00 - 19:00",
+      "maxOccupancy": 200,
+      "qrPrefix": "JB",
+      "type": "OFFICE",
+      "status": "ACTIVE",
+      "lastActivityAt": "2026-03-25T12:20:19.660Z"
+    }
+  ],
+  "entryPoints": [
+    {
+      "id": "ep-1",
+      "siteId": "site-1",
+      "name": "Main Gate",
+      "type": "GATE",
+      "status": "ACTIVE",
+      "lastGuardId": "u-3"
+    },
+    {
+      "id": "ep-2",
+      "siteId": "site-1",
+      "name": "Reception Desk 1",
+      "type": "RECEPTION",
       "status": "ACTIVE"
     }
   ],
@@ -119,6 +150,17 @@
       "type": "GUEST",
       "status": "PRE_BOOKED",
       "createdAt": "2026-03-25T17:42:50.180Z"
+    },
+    {
+      "id": "b-1775350248911",
+      "visitorName": "jkdkdf",
+      "company": "",
+      "scheduledTime": "2026-04-07",
+      "siteId": "site-1",
+      "hostId": "u-4",
+      "type": "GUEST",
+      "status": "PRE_BOOKED",
+      "createdAt": "2026-04-05T00:50:48.911Z"
     }
   ],
   "incidents": []

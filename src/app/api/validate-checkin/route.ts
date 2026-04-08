@@ -17,15 +17,36 @@ export async function POST(request: Request) {
             return NextResponse.json({ success: false, error: 'Invalid or expired QR token' }, { status: 403 });
         }
 
-        const { visitorId } = payload;
+        const { visit_id: visitorId } = payload;
         const db = readDb();
-        const visitorIndex = db.visitors.findIndex((v: any) => v.id === visitorId);
+        let visitorIndex = db.visitors.findIndex((v: any) => v.id === visitorId);
+        let visitor;
 
         if (visitorIndex === -1) {
-            return NextResponse.json({ success: false, error: 'Visitor not found' }, { status: 404 });
+            // Check if it's a booking
+            const bookingIndex = db.bookings?.findIndex((b: any) => b.id === visitorId);
+            if (bookingIndex !== -1) {
+                const booking = db.bookings[bookingIndex];
+                // Convert booking to visitor
+                visitor = {
+                    id: booking.id,
+                    name: booking.visitorName,
+                    type: booking.type || 'GUEST',
+                    siteId: booking.siteId,
+                    hostId: booking.hostId,
+                    companyId: 'comp-1',
+                    status: 'PENDING',
+                    phone: '',
+                    createdAt: booking.createdAt
+                };
+                db.visitors.push(visitor);
+                visitorIndex = db.visitors.length - 1;
+            } else {
+                return NextResponse.json({ success: false, error: 'Visitor or Booking not found' }, { status: 404 });
+            }
         }
 
-        const visitor = db.visitors[visitorIndex];
+        visitor = db.visitors[visitorIndex];
 
         // 2. Check entry type and access permissions
         if (visitor.status === 'ON_SITE' && visitor.entryType !== 'MULTIPLE') {

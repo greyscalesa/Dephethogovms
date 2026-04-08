@@ -9,9 +9,14 @@ import {
     X,
     Loader2,
     CalendarCheck,
-    Users
+    Users,
+    QrCode,
+    CheckCircle2,
+    Share2,
+    Download as DownloadIcon
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import VisitorQR from '@/components/VisitorQR';
 
 export default function BookingsPage() {
     const [bookings, setBookings] = useState<any[]>([]);
@@ -25,17 +30,24 @@ export default function BookingsPage() {
         hostId: 'u-4',
         type: 'GUEST'
     });
+    const [lastInvite, setLastInvite] = useState<any>(null);
+    const [showSuccess, setShowSuccess] = useState(false);
+    const [hosts, setHosts] = useState<any[]>([]);
 
     const fetchBookings = async () => {
         setLoading(true);
         try {
             const res = await fetch('/api/bookings');
             const data = await res.json();
+            const hostsRes = await fetch('/api/employees');
+            const hostsData = await hostsRes.json();
+            setHosts(hostsData);
+
             setBookings(data.map((b: any) => ({
                 ...b,
                 visitor: b.visitorName,
                 checkIn: b.scheduledTime ? new Date(b.scheduledTime).toLocaleDateString() : 'Pending',
-                host: 'David Smith', // Mock host for now
+                host: hostsData.find((h: any) => h.id === b.hostId)?.fullName || 'Alice Johnson', 
             })));
         } catch (err) {
             console.error(err);
@@ -57,7 +69,10 @@ export default function BookingsPage() {
                 body: JSON.stringify(formData),
             });
             if (res.ok) {
+                const newBooking = await res.json();
+                setLastInvite(newBooking);
                 setShowModal(false);
+                setShowSuccess(true);
                 setFormData({ visitorName: '', company: '', scheduledTime: '', siteId: 'site-1', hostId: 'u-4', type: 'GUEST' });
                 fetchBookings();
             }
@@ -162,6 +177,57 @@ export default function BookingsPage() {
                                         Confirm Reservation
                                     </button>
                                 </form>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+
+            <AnimatePresence>
+                {showSuccess && lastInvite && (
+                    <div className="fixed inset-0 z-[110] flex items-center justify-center p-6">
+                        <motion.div
+                            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                            onClick={() => setShowSuccess(false)}
+                            className="absolute inset-0 bg-[#042f21]/90 backdrop-blur-xl"
+                        />
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                            className="bg-white w-full max-w-2xl rounded-[40px] shadow-2xl relative z-11 overflow-hidden"
+                        >
+                            <div className="p-8 md:p-12">
+                                <div className="flex items-center justify-between mb-10">
+                                    <div>
+                                        <h2 className="text-3xl font-black text-[#042f21] tracking-tighter uppercase font-outfit">Invite Created</h2>
+                                        <p className="text-slate-400 font-bold text-xs uppercase tracking-widest mt-1">Successfully registered reservation</p>
+                                    </div>
+                                    <button onClick={() => setShowSuccess(false)} className="p-3 bg-slate-100 rounded-2xl text-slate-400 hover:text-slate-900 transition-colors">
+                                        <X size={24} strokeWidth={3} />
+                                    </button>
+                                </div>
+
+                                <div className="bg-slate-50 rounded-[32px] p-2 mb-8">
+                                    <VisitorQR 
+                                        visitor={{
+                                            id: lastInvite.id,
+                                            name: lastInvite.visitorName,
+                                            type: lastInvite.type,
+                                            hostName: hosts.find(h => h.id === lastInvite.hostId)?.fullName || 'Alice Johnson',
+                                            siteId: lastInvite.siteId,
+                                            companyId: 'comp-1', // Default
+                                            phone: '',
+                                            status: 'PENDING'
+                                        } as any} 
+                                        token={lastInvite.qrToken} 
+                                    />
+                                </div>
+
+                                <button
+                                    onClick={() => setShowSuccess(false)}
+                                    className="w-full h-20 bg-[#042f21] text-white rounded-[24px] font-black text-sm uppercase tracking-widest shadow-2xl hover:bg-black active:scale-95 transition-all"
+                                >
+                                    Close & Return
+                                </button>
                             </div>
                         </motion.div>
                     </div>
