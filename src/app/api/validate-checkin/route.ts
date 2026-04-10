@@ -1,12 +1,11 @@
 import { NextResponse } from 'next/server';
-import { readDb, writeDb } from '@/lib/data-service';
+import { supabase } from '@/lib/supabase';
 import { verifyQrToken } from '@/lib/qr-service';
-import { VisitorStatus } from '@/lib/types';
 
 export async function POST(request: Request) {
     try {
         const { token } = await request.json();
-        
+
         if (!token) {
             return NextResponse.json({ success: false, error: 'Token is required' }, { status: 400 });
         }
@@ -18,65 +17,86 @@ export async function POST(request: Request) {
         }
 
         const { visit_id: visitorId } = payload;
-        const db = readDb();
-        let visitorIndex = db.visitors.findIndex((v: any) => v.id === visitorId);
-        let visitor;
 
-        if (visitorIndex === -1) {
+        // 2. Look up visitor
+        const { data: visitors } = await supabase
+            .from('visitors')
+            .select('*')
+            .eq('id', visitorId)
+            .limit(1);
+
+        let visitor = visitors?.[0];
+
+        if (!visitor) {
             // Check if it's a booking
-            const bookingIndex = db.bookings?.findIndex((b: any) => b.id === visitorId);
-            if (bookingIndex !== -1) {
-                const booking = db.bookings[bookingIndex];
-                // Convert booking to visitor
-                visitor = {
-                    id: booking.id,
-                    name: booking.visitorName,
-                    type: booking.type || 'GUEST',
-                    siteId: booking.siteId,
-                    hostId: booking.hostId,
-                    companyId: 'comp-1',
-                    status: 'PENDING',
-                    phone: '',
-                    createdAt: booking.createdAt
-                };
-                db.visitors.push(visitor);
-                visitorIndex = db.visitors.length - 1;
-            } else {
+            const { data: bookings } = await supabase
+                .from('bookings')
+                .select('*')
+                .eq('id', visitorId)
+                .limit(1);
+
+            const booking = bookings?.[0];
+            if (!booking) {
                 return NextResponse.json({ success: false, error: 'Visitor or Booking not found' }, { status: 404 });
             }
+
+            // Look up host name
+            const { data: hostUsers } = await supabase
+                .from('users')
+                .select('full_name')
+                .eq('id', booking.host_id)
+                .limit(1);
+
+            // Convert booking to visitor record
+            const newVisitor = {
+                id: booking.id,
+                name: booking.visitor_name,
+                type: booking.type || 'GUEST',
+                site_id: booking.site_id,
+                host_id: booking.host_id,
+                host_name: hostUsers?.[0]?.full_name || '',
+                company_id: 'comp-1',
+                status: 'PENDING',
+                phone: '',
+                created_at: booking.created_at,
+            };
+
+            const { error: insertError } = await supabase.from('visitors').insert([newVisitor]);
+            if (insertError) throw insertError;
+
+            visitor = newVisitor;
         }
 
-        visitor = db.visitors[visitorIndex];
-
-        // 2. Check entry type and access permissions
-        if (visitor.status === 'ON_SITE' && visitor.entryType !== 'MULTIPLE') {
-            return NextResponse.json({ 
-                success: false, 
-                error: 'Single-entry token already used.', 
-                visitorName: visitor.name 
+        // 3. Check entry type and access
+        if (visitor.status === 'ON_SITE' && visitor.entry_type !== 'MULTIPLE') {
+            return NextResponse.json({
+                success: false,
+                error: 'Single-entry token already used.',
+                visitorName: visitor.name,
             }, { status: 409 });
         }
 
-        // 3. Mark as checked in
+        // 4. Mark as checked in
         const now = new Date().toISOString();
-        const updatedVisitor = {
-            ...visitor,
-            status: 'ON_SITE',
-            checkedInAt: now,
-            checkIn: now,
-            scanAttempts: (visitor.scanAttempts || 0) + 1
-        };
+        const { error: updateError } = await supabase
+            .from('visitors')
+            .update({
+                status: 'ON_SITE',
+                checked_in_at: now,
+                check_in: now,
+                scan_attempts: (visitor.scan_attempts || 0) + 1,
+            })
+            .eq('id', visitor.id);
 
-        db.visitors[visitorIndex] = updatedVisitor;
-        writeDb(db);
+        if (updateError) throw updateError;
 
         return NextResponse.json({
             success: true,
             visitorName: visitor.name,
             checkedInAt: now,
-            message: `Welcome, ${visitor.name}!`
+            message: `Welcome, ${visitor.name}!`,
         });
-    } catch (error) {
+    } catch (error: any) {
         console.error('Check-in error:', error);
         return NextResponse.json({ success: false, error: 'Server error during check-in' }, { status: 500 });
     }
