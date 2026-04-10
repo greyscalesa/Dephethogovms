@@ -1,9 +1,20 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
+import { getAuthenticatedUser, isPlatformAdmin } from '@/lib/authz';
 
 export async function GET() {
     try {
-        const { data: companies, error } = await supabase.from('companies').select('*');
+        const authUser = await getAuthenticatedUser();
+        if (!authUser) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
+        let query = supabase.from('companies').select('*');
+        if (!isPlatformAdmin(authUser) && authUser.companyId) {
+            query = query.eq('id', authUser.companyId);
+        }
+
+        const { data: companies, error } = await query;
         if (error) throw error;
         return NextResponse.json(companies || []);
     } catch (error: any) {
@@ -14,6 +25,14 @@ export async function GET() {
 
 export async function POST(request: Request) {
     try {
+        const authUser = await getAuthenticatedUser();
+        if (!authUser) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+        if (!isPlatformAdmin(authUser)) {
+            return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+        }
+
         const data = await request.json();
 
         const newCompany = {

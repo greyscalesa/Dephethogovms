@@ -1,19 +1,37 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
+import bcrypt from 'bcryptjs';
+import { canAccessCompany, canAccessSite, getAuthenticatedUser, isPlatformAdmin } from '@/lib/authz';
 
 export async function GET(request: Request) {
     try {
+        const authUser = await getAuthenticatedUser();
+        if (!authUser) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
         const { searchParams } = new URL(request.url);
         const companyId = searchParams.get('companyId');
         const siteId = searchParams.get('siteId');
+
+        if (companyId && !canAccessCompany(authUser, companyId)) {
+            return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+        }
+        if (siteId && !canAccessSite(authUser, siteId)) {
+            return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+        }
 
         let query = supabase.from('users').select('*').eq('role', 'EMPLOYEE');
 
         if (companyId) {
             query = query.eq('company_id', companyId);
+        } else if (!isPlatformAdmin(authUser) && authUser.companyId) {
+            query = query.eq('company_id', authUser.companyId);
         }
         if (siteId) {
             query = query.eq('site_id', siteId);
+        } else if (!isPlatformAdmin(authUser) && authUser.siteId) {
+            query = query.eq('site_id', authUser.siteId);
         }
 
         const { data: employees, error } = await query;
@@ -40,16 +58,26 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
     try {
+        const authUser = await getAuthenticatedUser();
+        if (!authUser) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
         const data = await request.json();
+        const targetCompanyId = data.companyId || authUser.companyId;
+        if (!canAccessCompany(authUser, targetCompanyId) || !canAccessSite(authUser, data.siteId || authUser.siteId)) {
+            return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+        }
+        const hashedPassword = await bcrypt.hash(data.password || 'password123', 10);
 
         const newEmployee = {
             id: `u-${Date.now()}`,
-            company_id: data.companyId || 'comp-1',
-            site_id: data.siteId || null,
+            company_id: targetCompanyId,
+            site_id: data.siteId || authUser.siteId || null,
             role: 'EMPLOYEE',
             full_name: data.fullName,
             email: data.email,
-            password: data.password || 'password123',
+            password: hashedPassword,
             department: data.department || '',
             is_host: data.isHost || false,
         };

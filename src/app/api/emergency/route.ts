@@ -1,16 +1,28 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
+import { canAccessCompany, canAccessSite, getAuthenticatedUser, isPlatformAdmin } from '@/lib/authz';
 
 export async function POST(request: Request) {
     try {
+        const authUser = await getAuthenticatedUser();
+        if (!authUser) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
         const data = await request.json();
+        const targetSiteId = data.siteId || data.site_id || authUser.siteId;
+        const targetCompanyId = data.companyId || data.company_id || authUser.companyId;
+        if (!canAccessCompany(authUser, targetCompanyId) || !canAccessSite(authUser, targetSiteId)) {
+            return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+        }
 
         const incident = {
             id: `inc-${Date.now()}`,
             type: data.type || '',
             description: data.description || '',
-            site_id: data.siteId || data.site_id || null,
+            site_id: targetSiteId || null,
             reporter_id: data.reporterId || data.reporter_id || null,
+            company_id: targetCompanyId || null,
             severity: data.severity || '',
             timestamp: new Date().toISOString(),
             status: 'ACTIVE',
@@ -32,10 +44,23 @@ export async function POST(request: Request) {
 
 export async function GET() {
     try {
-        const { data: incidents, error } = await supabase
+        const authUser = await getAuthenticatedUser();
+        if (!authUser) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
+        let query = supabase
             .from('incidents')
             .select('*')
             .order('timestamp', { ascending: false });
+        if (!isPlatformAdmin(authUser) && authUser.companyId) {
+            query = query.eq('company_id', authUser.companyId);
+        }
+        if (!isPlatformAdmin(authUser) && authUser.siteId) {
+            query = query.eq('site_id', authUser.siteId);
+        }
+
+        const { data: incidents, error } = await query;
 
         if (error) throw error;
 

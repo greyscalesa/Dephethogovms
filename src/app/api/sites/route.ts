@@ -1,9 +1,20 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
+import { canAccessCompany, getAuthenticatedUser, isPlatformAdmin } from '@/lib/authz';
 
 export async function GET() {
     try {
-        const { data: sites, error: sitesError } = await supabase.from('sites').select('*');
+        const authUser = await getAuthenticatedUser();
+        if (!authUser) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
+        let sitesQuery = supabase.from('sites').select('*');
+        if (!isPlatformAdmin(authUser) && authUser.companyId) {
+            sitesQuery = sitesQuery.eq('company_id', authUser.companyId);
+        }
+
+        const { data: sites, error: sitesError } = await sitesQuery;
         if (sitesError) throw sitesError;
 
         const { data: visitors, error: visitorsError } = await supabase.from('visitors').select('site_id, status, check_in');
@@ -45,7 +56,16 @@ export async function GET() {
 
 export async function POST(request: Request) {
     try {
+        const authUser = await getAuthenticatedUser();
+        if (!authUser) {
+            return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+        }
+
         const data = await request.json();
+        const targetCompanyId = data.companyId || authUser.companyId;
+        if (!canAccessCompany(authUser, targetCompanyId)) {
+            return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 });
+        }
         
         const newSite = {
             id: `site-${Date.now()}`,
@@ -55,7 +75,7 @@ export async function POST(request: Request) {
             operating_hours: data.operatingHours,
             max_occupancy: data.maxOccupancy,
             status: 'ACTIVE',
-            company_id: 'comp-1', // Defaulting to the dummy company
+            company_id: targetCompanyId,
             created_at: new Date().toISOString()
         };
         

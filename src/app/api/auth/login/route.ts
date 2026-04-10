@@ -1,21 +1,29 @@
 import { NextResponse } from 'next/server';
+import bcrypt from 'bcryptjs';
 import { supabase } from '@/lib/supabase';
+import { createSessionToken, sessionCookieConfig } from '@/lib/session';
 
 export async function POST(request: Request) {
     try {
         const { email, password } = await request.json();
+        if (typeof email !== 'string' || typeof password !== 'string' || !email || !password) {
+            return NextResponse.json({ error: 'Email and password are required' }, { status: 400 });
+        }
 
         const { data: users, error } = await supabase
             .from('users')
             .select('*')
             .eq('email', email)
-            .eq('password', password)
             .limit(1);
 
         if (error) throw error;
 
         const user = users?.[0];
-        if (!user) {
+        const storedPassword = typeof user?.password === 'string' ? user.password : '';
+        const isBcryptHash = storedPassword.startsWith('$2a$') || storedPassword.startsWith('$2b$') || storedPassword.startsWith('$2y$');
+        const passwordIsValid = isBcryptHash ? await bcrypt.compare(password, storedPassword) : storedPassword === password;
+
+        if (!user || !passwordIsValid) {
             return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
         }
 
@@ -32,12 +40,13 @@ export async function POST(request: Request) {
         };
 
         const response = NextResponse.json({ user: mappedUser });
-        response.cookies.set('session', JSON.stringify({ id: user.id }), {
+        const sessionToken = await createSessionToken({ id: user.id });
+        response.cookies.set(sessionCookieConfig.name, sessionToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'lax',
             path: '/',
-            maxAge: 60 * 60 * 24 * 7, // 1 week
+            maxAge: sessionCookieConfig.maxAge,
         });
 
         return response;

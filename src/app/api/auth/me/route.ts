@@ -1,22 +1,26 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { supabase } from '@/lib/supabase';
+import { sessionCookieConfig, verifySessionToken } from '@/lib/session';
 
 export async function GET() {
     try {
         const cookieStore = await cookies();
-        const session = cookieStore.get('session');
+        const session = cookieStore.get(sessionCookieConfig.name);
 
         if (!session) {
             return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
         }
 
-        const { id } = JSON.parse(session.value);
+        const payload = await verifySessionToken(session.value);
+        if (!payload) {
+            return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+        }
 
         const { data: users, error } = await supabase
             .from('users')
             .select('*')
-            .eq('id', id)
+            .eq('id', payload.id)
             .limit(1);
 
         if (error) throw error;

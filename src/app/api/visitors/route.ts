@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { generateQrToken } from '@/lib/qr-service';
+import { canAccessCompany, canAccessSite, getAuthenticatedUser, isPlatformAdmin } from '@/lib/authz';
 
 function mapVisitorToFrontend(v: any) {
     return {
@@ -35,12 +36,25 @@ function mapVisitorToFrontend(v: any) {
 
 export async function GET(request: Request) {
     try {
+        const authUser = await getAuthenticatedUser();
+        if (!authUser) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
         const { searchParams } = new URL(request.url);
         const siteId = searchParams.get('siteId');
 
         let query = supabase.from('visitors').select('*');
+        if (!isPlatformAdmin(authUser) && authUser.companyId) {
+            query = query.eq('company_id', authUser.companyId);
+        }
         if (siteId && siteId !== 'all') {
+            if (!canAccessSite(authUser, siteId)) {
+                return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+            }
             query = query.eq('site_id', siteId);
+        } else if (!isPlatformAdmin(authUser) && authUser.siteId) {
+            query = query.eq('site_id', authUser.siteId);
         }
 
         const { data: visitors, error } = await query;
@@ -55,7 +69,16 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
     try {
+        const authUser = await getAuthenticatedUser();
+        if (!authUser) {
+            return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+        }
+
         const body = await request.json();
+        const targetCompanyId = body.companyId || authUser.companyId;
+        if (!canAccessCompany(authUser, targetCompanyId) || !canAccessSite(authUser, body.siteId)) {
+            return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 });
+        }
         const visitId = `v-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
         // Check for duplicate pending invitations
@@ -88,7 +111,7 @@ export async function POST(request: Request) {
             site_id: body.siteId,
             host_id: body.hostId,
             host_name: body.hostName || '',
-            company_id: body.companyId || 'comp-1',
+            company_id: targetCompanyId,
             purpose: body.purpose || '',
             arrival_date: body.arrivalDate || '',
             arrival_time: body.arrivalTime || '',

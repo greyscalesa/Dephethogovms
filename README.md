@@ -2,6 +2,9 @@
 
 ## 🚀 Getting Started
 
+0. **Configure Environment Variables**:
+   - Copy `.env.example` to `.env.local` and fill required values.
+
 1. **Install Dependencies**:
    ```bash
    npm install
@@ -32,3 +35,14 @@
 - `src/components/` - Shared UI components (Charts, Tables, Layout)
 - `src/lib/types.ts` - Shared Core domain types.
 - `ARCHITECTURE.md` - Full Database & API schema.
+- `AUDIT_FIX_CHECKLIST.md` - Prioritized P0/P1/P2 hardening backlog.
+
+## 🚢 Deployment Target
+
+- This app is configured for Netlify-compatible Next.js deployment (`npm run build`).
+
+## 🔐 Password Migration
+
+- Dry run (no updates): `npm run migrate:passwords`
+- Apply updates: `npm run migrate:passwords -- --apply`
+- Optional targeting: `npm run migrate:passwords -- --email user@example.com`

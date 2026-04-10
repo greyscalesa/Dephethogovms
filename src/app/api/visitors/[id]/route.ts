@@ -1,13 +1,34 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
+import { canAccessCompany, canAccessSite, getAuthenticatedUser, isPlatformAdmin } from '@/lib/authz';
 
 export async function PATCH(
     request: Request,
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const authUser = await getAuthenticatedUser();
+        if (!authUser) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
         const { id } = await params;
         const data = await request.json();
+
+        if (!isPlatformAdmin(authUser)) {
+            const { data: existingVisitor, error: existingError } = await supabase
+                .from('visitors')
+                .select('company_id, site_id')
+                .eq('id', id)
+                .limit(1)
+                .single();
+            if (existingError || !existingVisitor) {
+                return NextResponse.json({ error: 'Visitor not found' }, { status: 404 });
+            }
+            if (!canAccessCompany(authUser, existingVisitor.company_id) || !canAccessSite(authUser, existingVisitor.site_id)) {
+                return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+            }
+        }
 
         // Build the update object in snake_case
         const updateFields: Record<string, any> = {};
