@@ -25,6 +25,27 @@ const data = [
 ];
 
 export default function VisitorChart() {
+    const [chartHeight, setChartHeight] = React.useState(320);
+
+    React.useEffect(() => {
+        const updateChartHeight = () => {
+            const width = window.innerWidth;
+            if (width < 640) {
+                setChartHeight(240);
+                return;
+            }
+            if (width < 1024) {
+                setChartHeight(280);
+                return;
+            }
+            setChartHeight(360);
+        };
+
+        updateChartHeight();
+        window.addEventListener('resize', updateChartHeight);
+        return () => window.removeEventListener('resize', updateChartHeight);
+    }, []);
+
     return (
         <div className="bg-white p-6 md:p-10 rounded-[24px] md:rounded-[32px] border border-slate-100 shadow-xl shadow-slate-200/40 min-h-[350px] md:min-h-[500px] flex flex-col">
             <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-6 mb-8 md:mb-10">
@@ -46,8 +67,8 @@ export default function VisitorChart() {
                 </div>
             </div>
 
-            <div className="flex-1 w-full mt-auto">
-                <ResponsiveContainer width="100%" height="100%">
+            <div className="flex-1 w-full mt-auto min-h-[240px]">
+                <ResponsiveContainer width="100%" height={chartHeight}>
                     <AreaChart data={data} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                         <defs>
                             <linearGradient id="colorTotal" x1="0" y1="0" x2="0" y2="1">

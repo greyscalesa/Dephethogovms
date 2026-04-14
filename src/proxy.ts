@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { sessionCookieConfig, verifySessionToken } from '@/lib/session';
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
     const session = request.cookies.get(sessionCookieConfig.name);
     const path = request.nextUrl.pathname;
 
