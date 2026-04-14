@@ -10,10 +10,15 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Email and password are required' }, { status: 400 });
         }
 
+        const normalizedEmail = email.trim().toLowerCase();
+        if (!normalizedEmail) {
+            return NextResponse.json({ error: 'Email and password are required' }, { status: 400 });
+        }
+
         const { data: users, error } = await supabase
             .from('users')
             .select('*')
-            .eq('email', email)
+            .ilike('email', normalizedEmail)
             .limit(1);
 
         if (error) throw error;
