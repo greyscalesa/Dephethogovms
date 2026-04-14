@@ -5,6 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:cloudflare": "next build && opennextjs-cloudflare build --skip-next-build",
+    "deploy:cloudflare": "opennextjs-cloudflare deploy",
     "start": "next start",
     "lint": "eslint",
     "migrate:passwords": "node scripts/migrate-passwords.js"

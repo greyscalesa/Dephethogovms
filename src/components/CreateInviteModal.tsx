@@ -117,7 +117,8 @@ export default function CreateInviteModal({ isOpen, onClose, onSuccess }: Create
     };
 
     const handleCopyLink = () => {
-        const link = `${getCheckinBaseUrl()}/checkin?token=${createdVisitor.qrToken}`;
+        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || getCheckinBaseUrl();
+        const link = `${baseUrl}/checkin?token=${createdVisitor.qrToken}`;
         navigator.clipboard.writeText(link);
         alert('Check-in link copied to clipboard!');
     };
@@ -125,7 +126,8 @@ export default function CreateInviteModal({ isOpen, onClose, onSuccess }: Create
     const handleShareWhatsApp = () => {
         const date = new Date(createdVisitor.arrivalDate || createdVisitor.createdAt).toLocaleDateString();
         const time = createdVisitor.arrivalTime || 'specified time';
-        const link = `${getCheckinBaseUrl()}/checkin?token=${createdVisitor.qrToken}`;
+        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || getCheckinBaseUrl();
+        const link = `${baseUrl}/checkin?token=${createdVisitor.qrToken}`;
         const message = `Hi ${createdVisitor.name}, your visit to ${createdVisitor.siteName || 'our site'} on ${date} at ${time} has been confirmed. Please present this QR code on arrival: ${link}`;
         window.open(`https://wa.me/${createdVisitor.phone.replace(/\+/g, '')}?text=${encodeURIComponent(message)}`, '_blank');
     };
@@ -454,7 +456,7 @@ export default function CreateInviteModal({ isOpen, onClose, onSuccess }: Create
                                     <div className="absolute -inset-4 bg-gradient-to-tr from-emerald-500/10 to-blue-500/10 rounded-[48px] blur-3xl opacity-50" />
                                     <div className="relative p-10 bg-white border border-slate-100 rounded-[48px] shadow-2xl">
                                         <QRCodeSVG 
-                                            value={`${getCheckinBaseUrl()}/checkin?token=${createdVisitor?.qrToken}`}
+                                            value={`${process.env.NEXT_PUBLIC_APP_URL || getCheckinBaseUrl()}/checkin?token=${createdVisitor?.qrToken}`}
                                             size={200}
                                             level="H"
                                             includeMargin={false}
