@@ -54,6 +54,8 @@ export async function POST(request: Request) {
             id: `b-${Date.now()}`,
             visitor_name: body.visitorName,
             company: body.company || '',
+            id_number: body.idNumber || '',
+            purpose: body.purpose || '',
             scheduled_time: body.scheduledTime || '',
             site_id: body.siteId,
             host_id: body.hostId || 'u-4',
@@ -61,6 +63,8 @@ export async function POST(request: Request) {
             status: 'PRE_BOOKED',
             qr_token: qrToken,
             company_id: targetCompanyId,
+            reg_number: body.regNumber || '',
+            vin: body.vin || '',
             created_at: new Date().toISOString()
         };
 
@@ -72,14 +76,19 @@ export async function POST(request: Request) {
             id: newBooking.id,
             visitorName: newBooking.visitor_name,
             company: newBooking.company,
+            idNumber: newBooking.id_number,
+            purpose: newBooking.purpose,
             scheduledTime: newBooking.scheduled_time,
             siteId: newBooking.site_id,
             hostId: newBooking.host_id,
             type: newBooking.type,
             status: newBooking.status,
             qrToken: newBooking.qr_token,
+            regNumber: newBooking.reg_number,
+            vin: newBooking.vin,
             createdAt: newBooking.created_at
         }, { status: 201 });
+
 
     } catch (error: any) {
         return NextResponse.json({ success: false, error: error.message }, { status: 500 });

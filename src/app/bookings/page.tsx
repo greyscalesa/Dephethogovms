@@ -17,20 +17,12 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import VisitorQR from '@/components/VisitorQR';
+import CreateInviteModal from '@/components/CreateInviteModal';
 
 export default function BookingsPage() {
     const [bookings, setBookings] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
-    const [isSubmitting, setIsSubmitting] = useState(false);
     const [showModal, setShowModal] = useState(false);
-    const [formData, setFormData] = useState({
-        visitorName: '',
-        company: '',
-        scheduledTime: '',
-        siteId: 'site-1',
-        hostId: 'u-4',
-        type: 'GUEST'
-    });
     const [lastInvite, setLastInvite] = useState<any>(null);
     const [showSuccess, setShowSuccess] = useState(false);
     const [hosts, setHosts] = useState<any[]>([]);
@@ -61,33 +53,11 @@ export default function BookingsPage() {
         fetchBookings();
     }, []);
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (isSubmitting) return;
-        setIsSubmitting(true);
-        try {
-            const res = await fetch('/api/bookings', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData),
-            });
-            if (res.ok) {
-                const newBooking = await res.json();
-                setLastInvite(newBooking);
-                setShowModal(false);
-                setShowSuccess(true);
-                setFormData({ visitorName: '', company: '', scheduledTime: '', siteId: 'site-1', hostId: 'u-4', type: 'GUEST' });
-                fetchBookings();
-            } else {
-                const errorData = await res.json();
-                alert(`Creation failed: ${errorData.error || 'Internal Server Error'}`);
-            }
-        } catch (err) {
-            console.error(err);
-            alert('A network error occurred. Please try again.');
-        } finally {
-            setIsSubmitting(false);
-        }
+    const handleInviteSuccess = (visitor: any) => {
+        setLastInvite(visitor);
+        setShowModal(false);
+        setShowSuccess(true);
+        fetchBookings();
     };
 
     const columns = [
@@ -125,73 +95,11 @@ export default function BookingsPage() {
                 )}
             </div>
 
-            <AnimatePresence>
-                {showModal && (
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
-                        <motion.div
-                            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                            onClick={() => setShowModal(false)}
-                            className="absolute inset-0 bg-[#042f21]/80 backdrop-blur-md"
-                        />
-                        <motion.div
-                            initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
-                            className="bg-white w-full max-w-xl rounded-[40px] shadow-2xl relative z-11 overflow-hidden"
-                        >
-                            <div className="p-10">
-                                <div className="flex items-center justify-between mb-8">
-                                    <h2 className="text-3xl font-black text-[#042f21] tracking-tighter uppercase font-outfit">Create Invite</h2>
-                                    <button onClick={() => setShowModal(false)} className="p-3 bg-slate-100 rounded-2xl text-slate-400 hover:text-slate-900 transition-colors">
-                                        <X size={24} strokeWidth={3} />
-                                    </button>
-                                </div>
-
-                                <form onSubmit={handleSubmit} className="space-y-6">
-                                    <div className="grid grid-cols-2 gap-6">
-                                        <div className="space-y-2">
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Visitor Full Name</label>
-                                            <input
-                                                required
-                                                className="w-full h-16 px-6 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-2 focus:ring-[#fa922c]/20 focus:border-[#fa922c] transition-all font-bold"
-                                                value={formData.visitorName}
-                                                onChange={e => setFormData({ ...formData, visitorName: e.target.value })}
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Arrival Date</label>
-                                            <input
-                                                required
-                                                type="date"
-                                                className="w-full h-16 px-6 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-2 focus:ring-[#fa922c]/20 focus:border-[#fa922c] transition-all font-bold"
-                                                value={formData.scheduledTime}
-                                                onChange={e => setFormData({ ...formData, scheduledTime: e.target.value })}
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Select Site Location</label>
-                                        <select
-                                            className="w-full h-16 px-6 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-2 focus:ring-[#fa922c]/20 focus:border-[#fa922c] transition-all font-bold appearance-none"
-                                            value={formData.siteId}
-                                            onChange={e => setFormData({ ...formData, siteId: e.target.value })}
-                                        >
-                                            <option value="site-1">Main HQ</option>
-                                            <option value="site-2">JHB Branch</option>
-                                        </select>
-                                    </div>
-
-                                    <button
-                                        type="submit"
-                                        disabled={isSubmitting}
-                                        className="w-full h-20 bg-[#fa922c] text-white rounded-[24px] font-black text-sm uppercase tracking-widest shadow-2xl shadow-[#fa922c]/30 hover:bg-[#e07d20] active:scale-95 transition-all mt-4 disabled:opacity-50 flex items-center justify-center gap-2"
-                                    >
-                                        {isSubmitting ? <Loader2 className="animate-spin" size={20} /> : 'Confirm Reservation'}
-                                    </button>
-                                </form>
-                            </div>
-                        </motion.div>
-                    </div>
-                )}
-            </AnimatePresence>
+            <CreateInviteModal 
+                isOpen={showModal} 
+                onClose={() => setShowModal(false)} 
+                onSuccess={handleInviteSuccess} 
+            />
 
             <AnimatePresence>
                 {showSuccess && lastInvite && (
@@ -220,12 +128,12 @@ export default function BookingsPage() {
                                     <VisitorQR 
                                         visitor={{
                                             id: lastInvite.id,
-                                            name: lastInvite.visitorName,
+                                            name: lastInvite.name || lastInvite.visitorName,
                                             type: lastInvite.type,
-                                            hostName: hosts.find(h => h.id === lastInvite.hostId)?.fullName || 'Alice Johnson',
+                                            hostName: hosts.find((h: any) => h.id === lastInvite.hostId)?.fullName || 'Alice Johnson',
                                             siteId: lastInvite.siteId,
-                                            companyId: 'comp-1', // Default
-                                            phone: '',
+                                            companyId: 'comp-1',
+                                            phone: lastInvite.phone || '',
                                             status: 'PENDING'
                                         } as any} 
                                         token={lastInvite.qrToken} 
@@ -234,7 +142,7 @@ export default function BookingsPage() {
 
                                 <button
                                     onClick={() => setShowSuccess(false)}
-                                    className="w-full h-20 bg-[#042f21] text-white rounded-[24px] font-black text-sm uppercase tracking-widest shadow-2xl hover:bg-black active:scale-95 transition-all"
+                                    className="w-full h-20 bg-[#042f21] text-white rounded-[24px] font-black text-sm uppercase tracking-widest shadow-2XL hover:bg-black active:scale-95 transition-all"
                                 >
                                     Close & Return
                                 </button>
@@ -246,4 +154,3 @@ export default function BookingsPage() {
         </div>
     );
 }
-
