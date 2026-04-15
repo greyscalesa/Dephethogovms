@@ -2,6 +2,21 @@ import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { canAccessCompany, canAccessSite, getAuthenticatedUser, isPlatformAdmin } from '@/lib/authz';
 
+function mapBookingToFrontend(b: any) {
+    return {
+        id: b.id,
+        visitorName: b.visitor_name,
+        company: b.company,
+        scheduledTime: b.scheduled_time,
+        siteId: b.site_id,
+        hostId: b.host_id,
+        type: b.type,
+        status: b.status,
+        qrToken: b.qr_token,
+        createdAt: b.created_at
+    };
+}
+
 export async function GET() {
     const authUser = await getAuthenticatedUser();
     if (!authUser) {
@@ -16,8 +31,9 @@ export async function GET() {
     }
     const { data: bookings, error } = await query;
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-    return NextResponse.json(bookings || []);
+    return NextResponse.json((bookings || []).map(mapBookingToFrontend));
 }
+
 
 export async function POST(request: Request) {
     try {
@@ -36,18 +52,35 @@ export async function POST(request: Request) {
 
         const newBooking = {
             id: `b-${Date.now()}`,
-            ...body,
-            company_id: targetCompanyId,
-            qr_token: qrToken,
+            visitor_name: body.visitorName,
+            company: body.company || '',
+            scheduled_time: body.scheduledTime || '',
+            site_id: body.siteId,
+            host_id: body.hostId || 'u-4',
+            type: body.type || 'GUEST',
             status: 'PRE_BOOKED',
+            qr_token: qrToken,
+            company_id: targetCompanyId,
             created_at: new Date().toISOString()
         };
 
         const { error } = await supabase.from('bookings').insert([newBooking]);
         if (error) throw error;
 
-        // Map snake_case back to camelCase for the frontend expectation
-        return NextResponse.json({ ...newBooking, qrToken: newBooking.qr_token, createdAt: newBooking.created_at }, { status: 201 });
+        // Map back to camelCase for the frontend
+        return NextResponse.json({
+            id: newBooking.id,
+            visitorName: newBooking.visitor_name,
+            company: newBooking.company,
+            scheduledTime: newBooking.scheduled_time,
+            siteId: newBooking.site_id,
+            hostId: newBooking.host_id,
+            type: newBooking.type,
+            status: newBooking.status,
+            qrToken: newBooking.qr_token,
+            createdAt: newBooking.created_at
+        }, { status: 201 });
+
     } catch (error: any) {
         return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }

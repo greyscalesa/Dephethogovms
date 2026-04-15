@@ -9,7 +9,7 @@
     "deploy:cloudflare": "opennextjs-cloudflare deploy",
     "start": "next start",
     "lint": "eslint",
-    "migrate:passwords": "node scripts/migrate-passwords.js"
+    "migrate:passwords": "node --env-file=.env.local scripts/migrate-passwords.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.102.1",
