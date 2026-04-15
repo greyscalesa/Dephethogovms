@@ -3,14 +3,9 @@
 import React from 'react';
 import {
     ChevronRight,
-    MoreVertical,
-    Search,
-    Filter,
-    Download,
     Calendar,
     CheckCircle2,
     Clock,
-    XCircle,
     MoreHorizontal,
     QrCode,
 } from 'lucide-react';
@@ -27,15 +22,15 @@ interface PaginationData {
     totalPages: number;
 }
 
-interface DataTableProps {
+interface DataTableProps<T> {
     columns: Column[];
-    data: any[];
+    data: T[];
     pagination?: PaginationData;
     onPageChange?: (page: number) => void;
     isLoading?: boolean;
 }
 
-export default function DataTable({ columns, data, pagination, onPageChange, isLoading }: DataTableProps) {
+export default function DataTable<T extends Record<string, any>>({ columns, data, pagination, onPageChange, isLoading }: DataTableProps<T>) {
     return (
         <div className="w-full space-y-4">
             {/* Mobile Card Layout */}

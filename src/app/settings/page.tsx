@@ -5,17 +5,26 @@ import TopHeader from '@/components/TopHeader';
 import {
     Settings as SettingsIcon,
     User,
-    Bell,
-    Lock,
-    Globe,
     Palette,
     ShieldCheck,
-    ChevronRight,
     Check,
     Save,
 } from 'lucide-react';
 
 type SectionID = 'general' | 'profile' | 'security' | 'branding';
+
+interface Settings {
+    companyName: string;
+    defaultSite: string;
+    timezone: string;
+    userName: string;
+    userEmail: string;
+    notifyEmail: boolean;
+    notifySms: boolean;
+    twoFactor: boolean;
+    primaryColor: string;
+    appName: string;
+}
 
 export default function SettingsPage() {
     const [activeSection, setActiveSection] = useState<SectionID>('general');
@@ -23,25 +32,24 @@ export default function SettingsPage() {
     const [saveSuccess, setSaveSuccess] = useState(false);
 
     // Form States
-    const [settings, setSettings] = useState({
-        companyName: 'Dephethogo Group',
-        defaultSite: 'Pretoria HQ',
-        timezone: 'GMT+2 (SAST)',
-        userName: 'Super Admin',
-        userEmail: 'admin@dephethogo.com',
-        notifyEmail: true,
-        notifySms: false,
-        twoFactor: true,
-        primaryColor: '#ff8c00',
-        appName: 'Dephethogo Access'
-    });
-
-    useEffect(() => {
-        const saved = localStorage.getItem('vms_settings');
-        if (saved) {
-            setSettings(JSON.parse(saved));
+    const [settings, setSettings] = useState<Settings>(() => {
+        if (typeof window !== 'undefined') {
+            const saved = localStorage.getItem('vms_settings');
+            if (saved) return JSON.parse(saved);
         }
-    }, []);
+        return {
+            companyName: 'Dephethogo Group',
+            defaultSite: 'Pretoria HQ',
+            timezone: 'GMT+2 (SAST)',
+            userName: 'Super Admin',
+            userEmail: 'admin@dephethogo.com',
+            notifyEmail: true,
+            notifySms: false,
+            twoFactor: true,
+            primaryColor: '#ff8c00',
+            appName: 'Dephethogo Access'
+        };
+    });
 
     const handleSave = () => {
         setIsSaving(true);
@@ -54,7 +62,7 @@ export default function SettingsPage() {
         }, 800);
     };
 
-    const updateSetting = (key: string, value: any) => {
+    const updateSetting = (key: keyof Settings, value: string | boolean) => {
         setSettings(prev => ({ ...prev, [key]: value }));
     };
 

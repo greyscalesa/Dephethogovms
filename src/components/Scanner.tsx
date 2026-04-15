@@ -5,8 +5,15 @@ import { Html5Qrcode } from 'html5-qrcode';
 import { X, Camera, RefreshCw, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
+interface ScanResult {
+    success: boolean;
+    message?: string;
+    error?: string;
+    visitorName?: string;
+}
+
 interface ScannerProps {
-    onScan: (token: string) => Promise<any>;
+    onScan: (token: string) => Promise<ScanResult>;
     onClose: () => void;
 }
 
@@ -20,6 +27,43 @@ export default function Scanner({ onScan, onClose }: ScannerProps) {
         visitorName?: string;
     } | null>(null);
     const [isScanning, setIsScanning] = useState(false);
+
+    const handleScan = useCallback(async (token: string) => {
+        if (!isScanning) return;
+        
+        setIsScanning(false); // Pause scanning
+        
+        try {
+            const response = await onScan(token);
+            setCheckinStatus({
+                success: response.success,
+                message: (response.success ? response.message : response.error) || '',
+                visitorName: response.visitorName
+            });
+            
+            // Resume scanning after 3 seconds if needed, or close
+            if (response.success) {
+                setTimeout(() => {
+                    onClose();
+                }, 2500);
+            } else {
+                setTimeout(() => {
+                    setCheckinStatus(null);
+                    setIsScanning(true);
+                }, 3000);
+            }
+        } catch (err: unknown) {
+            const errorMsg = (err as Error).message || 'Connection error during check-in.';
+            setCheckinStatus({
+                success: false,
+                message: errorMsg
+            });
+            setTimeout(() => {
+                setCheckinStatus(null);
+                setIsScanning(true);
+            }, 3000);
+        }
+    }, [isScanning, onScan, onClose]);
 
     useEffect(() => {
         const qrScannerId = "qr-reader";
@@ -46,10 +90,11 @@ export default function Scanner({ onScan, onClose }: ScannerProps) {
                 setIsLoading(false);
                 setError(null);
                 setIsScanning(true);
-            } catch (err: any) {
+            } catch (err: unknown) {
+                const errStr = String(err);
                 console.error("Scanner start error:", err);
                 setIsLoading(false);
-                if (err.toString().includes("NotAllowedError")) {
+                if (errStr.includes("NotAllowedError")) {
                     setError("Camera access denied. Please enable camera permissions in your browser.");
                 } else {
                     setError("Could not start camera. Make sure no other app is using it.");
@@ -65,43 +110,7 @@ export default function Scanner({ onScan, onClose }: ScannerProps) {
                 newScanner.stop().catch(e => console.error("Error stopping scanner:", e));
             }
         };
-    }, []);
-
-    const handleScan = useCallback(async (token: string) => {
-        if (!isScanning) return;
-        
-        setIsScanning(false); // Pause scanning
-        
-        try {
-            const response = await onScan(token);
-            setCheckinStatus({
-                success: response.success,
-                message: response.success ? response.message : response.error,
-                visitorName: response.visitorName
-            });
-            
-            // Resume scanning after 3 seconds if needed, or close
-            if (response.success) {
-                setTimeout(() => {
-                    onClose();
-                }, 2500);
-            } else {
-                setTimeout(() => {
-                    setCheckinStatus(null);
-                    setIsScanning(true);
-                }, 3000);
-            }
-        } catch (err) {
-            setCheckinStatus({
-                success: false,
-                message: 'Connection error during check-in.'
-            });
-            setTimeout(() => {
-                setCheckinStatus(null);
-                setIsScanning(true);
-            }, 3000);
-        }
-    }, [isScanning, onScan, onClose]);
+    }, [handleScan]);
 
     return (
         <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/90 backdrop-blur-xl">

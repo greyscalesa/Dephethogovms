@@ -31,8 +31,8 @@ export default function LoginPage() {
 
             router.push('/');
             router.refresh();
-        } catch (err: any) {
-            setError(err.message);
+        } catch (err: unknown) {
+            setError((err as Error).message);
         } finally {
             setLoading(false);
         }
@@ -99,7 +99,7 @@ export default function LoginPage() {
                             disabled={loading}
                             className="w-full h-16 bg-[#fa922c] text-white rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl shadow-[#fa922c]/20 hover:bg-[#e07d20] active:scale-[0.98] transition-all flex items-center justify-center gap-3"
                         >
-                            {loading ? <Loader2 size={24} className="animate-spin" /> : 'Acess Portal'}
+                            {loading ? <Loader2 size={24} className="animate-spin" /> : 'Access Portal'}
                         </button>
                     </form>
 

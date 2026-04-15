@@ -6,21 +6,28 @@ import {
     AlertTriangle,
     ShieldAlert,
     Radio,
-    Bell,
-    CheckCircle2,
-    Loader2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
+interface Incident {
+    id: string;
+    type: 'FIRE' | 'SECURITY' | 'MEDICAL';
+    location: string;
+    timestamp: string;
+    triggeredBy: string;
+}
+
 export default function EmergencyPage() {
-    const [incidents, setIncidents] = useState<any[]>([]);
-    const [loading, setLoading] = useState(false);
-    const [panicLoading, setPanicLoading] = useState(false);
+    const [incidents, setIncidents] = useState<Incident[]>([]);
 
     const fetchIncidents = async () => {
-        const res = await fetch('/api/emergency');
-        const data = await res.json();
-        setIncidents(data);
+        try {
+            const res = await fetch('/api/emergency');
+            const data = await res.json();
+            setIncidents(data);
+        } catch (err) {
+            console.error('Failed to fetch incidents:', err);
+        }
     };
 
     useEffect(() => {
@@ -28,7 +35,6 @@ export default function EmergencyPage() {
     }, []);
 
     const triggerPanic = async (type: string) => {
-        setPanicLoading(true);
         try {
             await fetch('/api/emergency', {
                 method: 'POST',
@@ -40,8 +46,8 @@ export default function EmergencyPage() {
                 }),
             });
             fetchIncidents();
-        } finally {
-            setPanicLoading(false);
+        } catch (err) {
+            console.error('Panic trigger failed:', err);
         }
     };
 

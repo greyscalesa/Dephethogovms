@@ -1,21 +1,14 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import TopHeader from '@/components/TopHeader';
 import DashboardStats from '@/components/DashboardStats';
 import VisitorChart from '@/components/VisitorChart';
 import {
   Users,
-  Calendar,
   Plus,
-  Filter,
-  Download,
-  Scan,
-  UserPlus,
   ArrowRight,
-  MoreVertical,
-  QrCode,
   MapPin,
   Building2,
   LayoutGrid,
@@ -24,12 +17,19 @@ import {
 import { useSite } from '@/lib/context/SiteContext';
 import SitesOverview from '@/components/SitesOverview';
 
+interface Visitor {
+  id: string;
+  name: string;
+  type: string;
+  checkIn?: string;
+  siteName?: string;
+}
+
 export default function Dashboard() {
   const { selectedSiteId } = useSite();
-  const [visitors, setVisitors] = React.useState<any[]>([]);
-  const [loading, setLoading] = React.useState(true);
+  const [visitors, setVisitors] = useState<Visitor[]>([]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const fetchVisitors = async () => {
       try {
         const res = await fetch(`/api/visitors?siteId=${selectedSiteId}&pageSize=10`);
@@ -37,8 +37,6 @@ export default function Dashboard() {
         setVisitors(result.data || []);
       } catch (err) {
         console.error('FAILED TO FETCH DASHBOARD LOGS:', err);
-      } finally {
-        setLoading(false);
       }
     };
     fetchVisitors();

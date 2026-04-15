@@ -4,14 +4,11 @@ import React, { useState, useEffect } from 'react';
 import { 
     Plus, 
     Search, 
-    Filter, 
     MoreVertical, 
     MapPin, 
     Building2, 
-    Shield, 
     Clock, 
     Users,
-    Activity,
     ChevronRight,
     Loader2,
     X,
@@ -206,7 +203,7 @@ export default function SitesPage() {
 
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="bg-slate-50 rounded-3xl p-5 border border-slate-100 hover:bg-white transition-colors cursor-default">
-                                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Today's Volume</p>
+                                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Today&apos;s Volume</p>
                                             <div className="flex items-baseline gap-1">
                                                 <span className="text-2xl font-black text-[#fa922c]">{site.stats.totalVisitorsToday}</span>
                                                 <span className="text-[10px] font-bold text-slate-400">Total</span>

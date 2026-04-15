@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
     Users, 
@@ -8,7 +8,6 @@ import {
     ShieldCheck, 
     Clock, 
     MapPin,
-    AlertCircle
 } from 'lucide-react';
 import { useSite } from '@/lib/context/SiteContext';
 
@@ -30,8 +29,8 @@ interface Site {
 
 export default function SitesOverview() {
     const { setSelectedSiteId } = useSite();
-    const [sites, setSites] = React.useState<Site[]>([]);
-    const [loading, setLoading] = React.useState(true);
+    const [sites, setSites] = useState<Site[]>([]);
+    const [loading, setLoading] = useState(true);
 
     const fetchSites = async () => {
         try {
@@ -45,7 +44,7 @@ export default function SitesOverview() {
         }
     };
 
-    React.useEffect(() => {
+    useEffect(() => {
         fetchSites();
         const interval = setInterval(() => {
             if (document.visibilityState === 'visible') fetchSites();

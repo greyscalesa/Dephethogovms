@@ -7,17 +7,33 @@ import {
     Plus,
     Loader2,
     Calendar,
-    Filter,
     Download,
     Search,
     AlertCircle,
 } from 'lucide-react';
+
+interface Visitor {
+    id: string;
+    name: string;
+    type: string;
+    checkIn?: string;
+    hostName?: string;
+    visitor?: string;
+    host?: string;
+}
+
+interface PaginationData {
+    page: number;
+    pageSize: number;
+    total: number;
+    totalPages: number;
+}
 import { motion, AnimatePresence } from 'framer-motion';
 import { exportToCSV, exportToPDF } from '@/lib/utils';
 import CreateInviteModal from '@/components/CreateInviteModal';
 
 export default function VisitorsPage() {
-    const [visitors, setVisitors] = useState<any[]>([]);
+    const [visitors, setVisitors] = useState<Visitor[]>([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
     
@@ -26,7 +42,7 @@ export default function VisitorsPage() {
     const [debouncedSearch, setDebouncedSearch] = useState('');
     const [status, setStatus] = useState('ALL');
     const [page, setPage] = useState(1);
-    const [pagination, setPagination] = useState<any>(null);
+    const [pagination, setPagination] = useState<PaginationData | undefined>(undefined);
 
     // Debounce search
     useEffect(() => {
@@ -56,7 +72,7 @@ export default function VisitorsPage() {
             const result = await res.json();
             
             if (result.data) {
-                setVisitors(result.data.map((v: any) => ({
+                setVisitors(result.data.map((v: Visitor & Record<string, any>) => ({
                     ...v,
                     visitor: v.name,
                     checkIn: v.checkIn ? new Date(v.checkIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Pending',
@@ -64,9 +80,10 @@ export default function VisitorsPage() {
                 })));
                 setPagination(result.pagination);
             }
-        } catch (err: any) {
+        } catch (err: unknown) {
+            const errorMsg = (err as Error).message || 'An unexpected error occurred.';
             console.error('Failed to fetch visitors:', err);
-            setError(err.message || 'An unexpected error occurred.');
+            setError(errorMsg);
         } finally {
             setLoading(false);
         }

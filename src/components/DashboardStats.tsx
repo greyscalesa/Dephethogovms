@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
     Users,
     LogIn,
@@ -9,17 +9,24 @@ import {
 import { motion } from 'framer-motion';
 import { useSite } from '@/lib/context/SiteContext';
 
-const iconMap: Record<string, any> = {
+interface Stat {
+    label: string;
+    value: string;
+    color: string;
+    iconColor: string;
+}
+
+const iconMap: Record<string, React.ElementType> = {
     'ACTIVE VISITS': Users,
     'EXPECTED TODAY': LogIn,
     'TOTAL VISITORS': Clock,
 };
 
 export default function DashboardStats() {
-    const [stats, setStats] = useState<any[]>([]);
+    const [stats, setStats] = useState<Stat[]>([]);
     const { selectedSiteId } = useSite();
 
-    const fetchStats = async () => {
+    const fetchStats = useCallback(async () => {
         try {
             const res = await fetch(`/api/stats?siteId=${selectedSiteId}`);
             const data = await res.json();
@@ -27,7 +34,7 @@ export default function DashboardStats() {
         } catch (err) {
             console.error('Failed to fetch stats:', err);
         }
-    };
+    }, [selectedSiteId]);
 
     useEffect(() => {
         fetchStats();
@@ -35,7 +42,7 @@ export default function DashboardStats() {
             if (document.visibilityState === 'visible') fetchStats();
         }, 30000); // 30s refresh only when active
         return () => clearInterval(interval);
-    }, [selectedSiteId]);
+    }, [fetchStats]);
 
     if (stats.length === 0) return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
@@ -67,7 +74,7 @@ export default function DashboardStats() {
                         </div>
 
                         <div className={cn("w-12 h-12 md:w-14 md:h-14 rounded-xl md:rounded-2xl flex items-center justify-center shrink-0", stat.color)}>
-                            <Icon className={stat.iconColor} size={22} md-size={24} strokeWidth={2.5} />
+                            <Icon className={stat.iconColor} size={24} strokeWidth={2.5} />
                         </div>
                     </motion.div>
                 );
@@ -76,6 +83,6 @@ export default function DashboardStats() {
     );
 }
 
-function cn(...inputs: any[]) {
+function cn(...inputs: (string | boolean | undefined | null)[]) {
     return inputs.filter(Boolean).join(' ');
 }

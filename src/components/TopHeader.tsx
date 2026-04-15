@@ -1,24 +1,29 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Bell,
     Search,
     ChevronDown,
     HelpCircle,
     Menu,
+    MapPin,
 } from 'lucide-react';
 import { useLayout } from '@/lib/LayoutContext';
 import { useSite } from '@/lib/context/SiteContext';
 import Logo from '@/components/Logo';
-import { MapPin } from 'lucide-react';
+
+interface Site {
+    id: string;
+    name: string;
+}
 
 export default function TopHeader() {
     const { toggleSidebar } = useLayout();
     const { selectedSiteId, setSelectedSiteId } = useSite();
-    const [sites, setSites] = React.useState<any[]>([]);
+    const [sites, setSites] = useState<Site[]>([]);
 
-    React.useEffect(() => {
+    useEffect(() => {
         const fetchSites = async () => {
             try {
                 const res = await fetch('/api/sites');

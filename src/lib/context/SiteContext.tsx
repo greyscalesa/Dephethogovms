@@ -10,14 +10,12 @@ interface SiteContextType {
 const SiteContext = createContext<SiteContextType | undefined>(undefined);
 
 export function SiteProvider({ children }: { children: React.ReactNode }) {
-    const [selectedSiteId, setSelectedSiteId] = useState<string>('all');
-
-    useEffect(() => {
-        const saved = localStorage.getItem('vms_selected_site');
-        if (saved) {
-            setSelectedSiteId(saved);
+    const [selectedSiteId, setSelectedSiteId] = useState<string>(() => {
+        if (typeof window !== 'undefined') {
+            return localStorage.getItem('vms_selected_site') || 'all';
         }
-    }, []);
+        return 'all';
+    });
 
     const handleSetSelectedSiteId = (id: string) => {
         setSelectedSiteId(id);

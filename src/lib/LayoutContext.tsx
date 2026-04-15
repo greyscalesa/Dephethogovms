@@ -17,8 +17,10 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
 
     // Close sidebar when route changes on mobile
     useEffect(() => {
-        setIsSidebarOpen(false);
-    }, [pathname]);
+        if (isSidebarOpen) {
+            setIsSidebarOpen(false);
+        }
+    }, [pathname, isSidebarOpen]);
 
     const toggleSidebar = () => setIsSidebarOpen(prev => !prev);
 
