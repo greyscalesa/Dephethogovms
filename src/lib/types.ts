@@ -133,3 +133,15 @@ export interface Transaction {
     checkOut?: string;
     status: 'ON_SITE' | 'CHECKED_OUT';
 }
+
+export interface Incident {
+    id: string;
+    type: string;
+    description: string;
+    site_id: string | null;
+    reporter_id: string | null;
+    company_id: string | null;
+    severity: string;
+    timestamp: string;
+    status: 'ACTIVE' | 'RESOLVED' | 'ARCHIVED';
+}

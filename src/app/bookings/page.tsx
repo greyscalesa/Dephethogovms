@@ -1,24 +1,18 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import TopHeader from '@/components/TopHeader';
 import DataTable from '@/components/DataTable';
 import {
-    Calendar,
-    Plus,
     X,
     Loader2,
     CalendarCheck,
-    Users,
-    QrCode,
-    CheckCircle2,
-    Share2,
     Download as DownloadIcon,
     Search,
     AlertCircle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { exportToCSV, exportToPDF } from '@/lib/utils';
+import { exportToCSV } from '@/lib/utils';
 import VisitorQR from '@/components/VisitorQR';
 import CreateInviteModal from '@/components/CreateInviteModal';
 
@@ -48,7 +42,7 @@ export default function BookingsPage() {
 
     const [error, setError] = useState<string | null>(null);
 
-    const fetchBookings = async () => {
+    const fetchBookings = useCallback(async () => {
         setLoading(true);
         setError(null);
         try {
@@ -92,11 +86,11 @@ export default function BookingsPage() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [page, debouncedSearch, status]);
 
     useEffect(() => {
         fetchBookings();
-    }, [page, status, debouncedSearch]);
+    }, [fetchBookings]);
 
     const handleInviteSuccess = (visitor: any) => {
         setLastInvite(visitor);

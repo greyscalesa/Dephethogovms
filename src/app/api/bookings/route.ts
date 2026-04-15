@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { canAccessCompany, canAccessSite, getAuthenticatedUser, isPlatformAdmin } from '@/lib/authz';
 
-function mapBookingToFrontend(b: any) {
+function mapBookingToFrontend(b: Record<string, any>) {
     return {
         id: b.id,
         visitorName: b.visitor_name,
@@ -70,9 +70,10 @@ export async function GET(request: Request) {
                 totalPages: count ? Math.ceil(count / limit) : 0
             }
         });
-    } catch (error: any) {
-        console.error('Bookings GET error:', error);
-        return NextResponse.json({ error: error.message }, { status: 500 });
+    } catch (error: unknown) {
+        const err = error as Error;
+        console.error('Bookings GET error:', err);
+        return NextResponse.json({ error: err.message }, { status: 500 });
     }
 }
 
@@ -132,7 +133,8 @@ export async function POST(request: Request) {
         }, { status: 201 });
 
 
-    } catch (error: any) {
-        return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    } catch (error: unknown) {
+        const err = error as Error;
+        return NextResponse.json({ success: false, error: err.message }, { status: 500 });
     }
 }

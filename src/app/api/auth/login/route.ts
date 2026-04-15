@@ -55,8 +55,9 @@ export async function POST(request: Request) {
         });
 
         return response;
-    } catch (error: any) {
-        console.error('Login error:', error);
+    } catch (error: unknown) {
+        const err = error as Error;
+        console.error('Login error:', err);
         return NextResponse.json({ error: 'Authentication service error' }, { status: 500 });
     }
 }

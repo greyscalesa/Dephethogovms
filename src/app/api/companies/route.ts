@@ -17,9 +17,10 @@ export async function GET() {
         const { data: companies, error } = await query;
         if (error) throw error;
         return NextResponse.json(companies || []);
-    } catch (error: any) {
-        console.error('Companies GET error:', error);
-        return NextResponse.json({ error: error.message }, { status: 500 });
+    } catch (error: unknown) {
+        const err = error as Error;
+        console.error('Companies GET error:', err);
+        return NextResponse.json({ error: err.message }, { status: 500 });
     }
 }
 
@@ -46,8 +47,9 @@ export async function POST(request: Request) {
         if (error) throw error;
 
         return NextResponse.json(newCompany);
-    } catch (error: any) {
-        console.error('Company POST error:', error);
-        return NextResponse.json({ error: error.message }, { status: 500 });
+    } catch (error: unknown) {
+        const err = error as Error;
+        console.error('Company POST error:', err);
+        return NextResponse.json({ error: err.message }, { status: 500 });
     }
 }

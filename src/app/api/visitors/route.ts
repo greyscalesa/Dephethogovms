@@ -3,7 +3,7 @@ import { supabase } from '@/lib/supabase';
 import { generateQrToken } from '@/lib/qr-service';
 import { canAccessCompany, canAccessSite, getAuthenticatedUser, isPlatformAdmin } from '@/lib/authz';
 
-function mapVisitorToFrontend(v: any) {
+function mapVisitorToFrontend(v: Record<string, any>) {
     return {
         id: v.id,
         companyId: v.company_id,
@@ -94,9 +94,10 @@ export async function GET(request: Request) {
                 totalPages: count ? Math.ceil(count / limit) : 0
             }
         });
-    } catch (error: any) {
-        console.error('Visitors GET error:', error);
-        return NextResponse.json({ error: error.message }, { status: 500 });
+    } catch (error: unknown) {
+        const err = error as Error;
+        console.error('Visitors GET error:', err);
+        return NextResponse.json({ error: err.message }, { status: 500 });
     }
 }
 
@@ -172,10 +173,11 @@ export async function POST(request: Request) {
             success: true,
             visitor: mapVisitorToFrontend(newVisitorDb),
         });
-    } catch (error: any) {
-        console.error('Visitor creation error:', error);
+    } catch (error: unknown) {
+        const err = error as Error;
+        console.error('Visitor creation error:', err);
         return NextResponse.json(
-            { success: false, error: error.message || 'Failed to create visitor invitation' },
+            { success: false, error: err.message || 'Failed to create visitor invitation' },
             { status: 500 }
         );
     }

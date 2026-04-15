@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { canAccessCompany, canAccessSite, getAuthenticatedUser, isPlatformAdmin } from '@/lib/authz';
+import { Incident } from '@/lib/types';
 
 export async function POST(request: Request) {
     try {
@@ -16,7 +17,7 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
         }
 
-        const incident = {
+        const incident: Incident = {
             id: `inc-${Date.now()}`,
             type: data.type || '',
             description: data.description || '',
@@ -36,9 +37,10 @@ export async function POST(request: Request) {
             siteId: incident.site_id,
             reporterId: incident.reporter_id,
         });
-    } catch (error: any) {
-        console.error('Emergency POST error:', error);
-        return NextResponse.json({ error: error.message }, { status: 500 });
+    } catch (error: unknown) {
+        const err = error as Error;
+        console.error('Emergency POST error:', err);
+        return NextResponse.json({ error: err.message }, { status: 500 });
     }
 }
 
@@ -64,15 +66,16 @@ export async function GET() {
 
         if (error) throw error;
 
-        const mapped = (incidents || []).map((inc: any) => ({
+        const mapped = (incidents as Incident[] || []).map((inc: Incident) => ({
             ...inc,
             siteId: inc.site_id,
             reporterId: inc.reporter_id,
         }));
 
         return NextResponse.json(mapped);
-    } catch (error: any) {
-        console.error('Emergency GET error:', error);
-        return NextResponse.json({ error: error.message }, { status: 500 });
+    } catch (error: unknown) {
+        const err = error as Error;
+        console.error('Emergency GET error:', err);
+        return NextResponse.json({ error: err.message }, { status: 500 });
     }
 }

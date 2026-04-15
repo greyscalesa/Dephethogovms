@@ -3,7 +3,6 @@
 import React from 'react';
 import TopHeader from '@/components/TopHeader';
 import {
-    Building2,
     Users,
     ShieldCheck,
     Settings,
