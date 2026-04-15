@@ -24,24 +24,26 @@ export default function SecurityPage() {
     const fetchVisitors = async () => {
         setLoading(true);
         try {
-            const res = await fetch('/api/visitors');
-            const data = await res.json();
-            // Filter only on-site
-            const onsite = data.filter((v: any) => v.status === 'ON_SITE');
+            // Server-side filtering for ON_SITE visitors is more efficient
+            const res = await fetch('/api/visitors?status=ON_SITE&pageSize=50');
+            const result = await res.json();
+            const onsite = result.data || [];
+            
             setVisitors(onsite.map((v: any) => {
-                const checkInTime = new Date(v.checkIn).getTime();
+                const checkInTime = v.checkIn ? new Date(v.checkIn).getTime() : Date.now();
                 const now = Date.now();
                 const overstayed = (now - checkInTime) > (4 * 60 * 60 * 1000); // 4 hours limit
 
                 return {
                     ...v,
                     visitor: v.name,
-                    checkIn: new Date(v.checkIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                    isOverstayed: overstayed
+                    checkIn: v.checkIn ? new Date(v.checkIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'N/A',
+                    isOverstayed: overstayed,
+                    host: v.hostName || 'Default Host'
                 };
             }));
         } catch (err) {
-            console.error(err);
+            console.error('FAILED TO FETCH SECURITY FEED:', err);
         } finally {
             setLoading(false);
         }

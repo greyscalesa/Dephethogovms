@@ -11,7 +11,8 @@ import {
     Building,
     Table as TableIcon,
     PieChart,
-    ArrowUpRight
+    ArrowUpRight,
+    Loader2
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { exportToCSV, exportToPDF } from '@/lib/utils';
@@ -23,13 +24,20 @@ export default function ReportsPage() {
         type: 'ALL_VISITORS'
     });
 
+    const [isExporting, setIsExporting] = useState(false);
+
     const handleExportCSV = async () => {
+        setIsExporting(true);
         try {
-            const res = await fetch('/api/visitors');
-            const data = await res.json();
-            exportToCSV(data, 'vms_visitor_report');
+            const res = await fetch('/api/visitors?pageSize=1000');
+            const result = await res.json();
+            if (result.data) {
+                exportToCSV(result.data, 'vms_visitor_audit_report');
+            }
         } catch (err) {
             console.error('Export failed', err);
+        } finally {
+            setIsExporting(false);
         }
     };
 
@@ -114,9 +122,11 @@ export default function ReportsPage() {
                     <div className="flex items-center gap-4">
                         <button
                             onClick={handleExportCSV}
-                            className="flex items-center gap-3 px-8 py-5 bg-white text-[#fa922c] rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-50 transition-all active:scale-95 shadow-xl"
+                            disabled={isExporting}
+                            className="flex items-center gap-3 px-8 py-5 bg-white text-[#fa922c] rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-50 transition-all active:scale-95 shadow-xl disabled:opacity-50"
                         >
-                            <Download size={20} /> Export CSV
+                            {isExporting ? <Loader2 className="animate-spin" /> : <Download size={20} />}
+                            {isExporting ? 'Exporting...' : 'Export CSV'}
                         </button>
                         <button
                             onClick={() => exportToPDF()}

@@ -17,21 +17,63 @@ function mapBookingToFrontend(b: any) {
     };
 }
 
-export async function GET() {
-    const authUser = await getAuthenticatedUser();
-    if (!authUser) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+export async function GET(request: Request) {
+    try {
+        const authUser = await getAuthenticatedUser();
+        if (!authUser) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
+        const { searchParams } = new URL(request.url);
+        const siteId = searchParams.get('siteId');
+        const search = searchParams.get('search');
+        const status = searchParams.get('status');
+        const page = parseInt(searchParams.get('page') || '1');
+        const limit = parseInt(searchParams.get('pageSize') || '10');
+        const sortBy = searchParams.get('sortBy') || 'created_at';
+        const order = searchParams.get('order') || 'desc';
+
+        const offset = (page - 1) * limit;
+
+        const fields = 'id, visitor_name, company, scheduled_time, site_id, host_id, type, status, qr_token, created_at, company_id, id_number, purpose, reg_number, vin';
+
+        let query = supabase.from('bookings').select(fields, { count: 'exact' });
+
+        if (!isPlatformAdmin(authUser) && authUser.companyId) {
+            query = query.eq('company_id', authUser.companyId);
+        }
+        if (siteId && siteId !== 'all') {
+            query = query.eq('site_id', siteId);
+        } else if (!isPlatformAdmin(authUser) && authUser.siteId) {
+            query = query.eq('site_id', authUser.siteId);
+        }
+
+        if (status && status !== 'ALL') {
+            query = query.eq('status', status);
+        }
+        if (search) {
+            query = query.or(`visitor_name.ilike.%${search}%,company.ilike.%${search}%,purpose.ilike.%${search}%`);
+        }
+
+        const { data: bookings, error, count } = await query
+            .order(sortBy, { ascending: order === 'asc' })
+            .range(offset, offset + limit - 1);
+
+        if (error) throw error;
+
+        return NextResponse.json({
+            data: (bookings || []).map(mapBookingToFrontend),
+            pagination: {
+                page,
+                pageSize: limit,
+                total: count || 0,
+                totalPages: count ? Math.ceil(count / limit) : 0
+            }
+        });
+    } catch (error: any) {
+        console.error('Bookings GET error:', error);
+        return NextResponse.json({ error: error.message }, { status: 500 });
     }
-    let query = supabase.from('bookings').select('*');
-    if (!isPlatformAdmin(authUser) && authUser.companyId) {
-        query = query.eq('company_id', authUser.companyId);
-    }
-    if (!isPlatformAdmin(authUser) && authUser.siteId) {
-        query = query.eq('site_id', authUser.siteId);
-    }
-    const { data: bookings, error } = await query;
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-    return NextResponse.json((bookings || []).map(mapBookingToFrontend));
 }
 
 

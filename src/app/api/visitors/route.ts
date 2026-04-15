@@ -43,8 +43,21 @@ export async function GET(request: Request) {
 
         const { searchParams } = new URL(request.url);
         const siteId = searchParams.get('siteId');
+        const search = searchParams.get('search');
+        const status = searchParams.get('status');
+        const page = parseInt(searchParams.get('page') || '1');
+        const limit = parseInt(searchParams.get('pageSize') || '10');
+        const sortBy = searchParams.get('sortBy') || 'created_at';
+        const order = searchParams.get('order') || 'desc';
 
-        let query = supabase.from('visitors').select('*');
+        const offset = (page - 1) * limit;
+
+        // Base fields we actually need in the UI
+        const fields = 'id, company_id, site_id, name, email, phone, company, type, status, host_id, host_name, qr_token, token_expiry, scan_attempts, check_in, check_out, created_at, arrival_date, arrival_time, duration, purpose, reg_number, vin, entry_type, early_check_in_minutes, id_number';
+
+        let query = supabase.from('visitors').select(fields, { count: 'exact' });
+
+        // Scoping
         if (!isPlatformAdmin(authUser) && authUser.companyId) {
             query = query.eq('company_id', authUser.companyId);
         }
@@ -57,10 +70,30 @@ export async function GET(request: Request) {
             query = query.eq('site_id', authUser.siteId);
         }
 
-        const { data: visitors, error } = await query;
+        // Filtering
+        if (status && status !== 'ALL') {
+            query = query.eq('status', status);
+        }
+        if (search) {
+            query = query.or(`name.ilike.%${search}%,email.ilike.%${search}%,phone.ilike.%${search}%,company.ilike.%${search}%`);
+        }
+
+        // Sorting & Pagination
+        const { data: visitors, error, count } = await query
+            .order(sortBy, { ascending: order === 'asc' })
+            .range(offset, offset + limit - 1);
+
         if (error) throw error;
 
-        return NextResponse.json((visitors || []).map(mapVisitorToFrontend));
+        return NextResponse.json({
+            data: (visitors || []).map(mapVisitorToFrontend),
+            pagination: {
+                page,
+                pageSize: limit,
+                total: count || 0,
+                totalPages: count ? Math.ceil(count / limit) : 0
+            }
+        });
     } catch (error: any) {
         console.error('Visitors GET error:', error);
         return NextResponse.json({ error: error.message }, { status: 500 });

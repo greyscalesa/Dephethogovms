@@ -32,11 +32,11 @@ export default function Dashboard() {
   React.useEffect(() => {
     const fetchVisitors = async () => {
       try {
-        const res = await fetch(`/api/visitors?siteId=${selectedSiteId}`);
-        const data = await res.json();
-        setVisitors(data);
+        const res = await fetch(`/api/visitors?siteId=${selectedSiteId}&pageSize=10`);
+        const result = await res.json();
+        setVisitors(result.data || []);
       } catch (err) {
-        console.error(err);
+        console.error('FAILED TO FETCH DASHBOARD LOGS:', err);
       } finally {
         setLoading(false);
       }
