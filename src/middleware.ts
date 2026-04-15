@@ -2,15 +2,16 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { sessionCookieConfig, verifySessionToken } from '@/lib/session';
 
-export async function proxy(request: NextRequest) {
+export async function middleware(request: NextRequest) {
     const session = request.cookies.get(sessionCookieConfig.name);
     const path = request.nextUrl.pathname;
 
-    // Allow static files and API routes related to auth
+    // Allow static files, favicon, and login API
     if (
         path.startsWith('/_next') ||
         path.includes('/favicon.ico') ||
-        path.startsWith('/api/auth/login')
+        path.startsWith('/api/auth/login') ||
+        path.startsWith('/public')
     ) {
         return NextResponse.next();
     }
@@ -21,7 +22,7 @@ export async function proxy(request: NextRequest) {
     if (!sessionPayload && path !== '/login') {
         // If it's an API route, return 401 instead of redirecting to HTML login page
         if (path.startsWith('/api/') && !path.startsWith('/api/auth/')) {
-            return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+            return NextResponse.json({ success: false, message: 'Identity verification required' }, { status: 401 });
         } else {
             return NextResponse.redirect(new URL('/login', request.url));
         }
@@ -36,5 +37,6 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-    matcher: ['/((?!api/auth/login).*)'],
+    matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
 };
+
